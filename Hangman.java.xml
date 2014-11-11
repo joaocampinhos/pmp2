@@ -1,0 +1,1257 @@
+<?xml version="1.0"?>
+<!DOCTYPE java-source-program SYSTEM "java-ml.dtd">
+<java-source-program>
+<java-class-file name="Hangman.java">
+<import module="java.awt.*"/>
+<import module="java.awt.event.*"/>
+<import module="java.applet.*"/>
+<import module="java.io.*"/>
+<import module="java.net.*"/>
+<class name="Hangman" visibility="public" line="45" col="0" end-line="558" end-col="0" comment="/*
+ * @(#)Hangman.java1.5  03 Apr 1996 10:56:25
+ *
+ * Copyright (c) 1994-1996 Sun Microsystems, Inc. All Rights Reserved.
+ *
+ * Permission to use, copy, modify, and distribute this software
+ * and its documentation for NON-COMMERCIAL or COMMERCIAL purposes and
+ * without fee is hereby granted. 
+ * Please refer to the file http://java.sun.com/copy_trademarks.html
+ * for further important copyright and trademark information and to
+ * http://java.sun.com/licensing.html for further important licensing
+ * information for the Java (tm) Technology.
+ * 
+ * SUN MAKES NO REPRESENTATIONS OR WARRANTIES ABOUT THE SUITABILITY OF
+ * THE SOFTWARE, EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED
+ * TO THE IMPLIED WARRANTIES OF MERCHANTABILITY, FITNESS FOR A
+ * PARTICULAR PURPOSE, OR NON-INFRINGEMENT. SUN SHALL NOT BE LIABLE FOR
+ * ANY DAMAGES SUFFERED BY LICENSEE AS A RESULT OF USING, MODIFYING OR
+ * DISTRIBUTING THIS SOFTWARE OR ITS DERIVATIVES.
+ * 
+ * THIS SOFTWARE IS NOT DESIGNED OR INTENDED FOR USE OR RESALE AS ON-LINE
+ * CONTROL EQUIPMENT IN HAZARDOUS ENVIRONMENTS REQUIRING FAIL-SAFE
+ * PERFORMANCE, SUCH AS IN THE OPERATION OF NUCLEAR FACILITIES, AIRCRAFT
+ * NAVIGATION OR COMMUNICATION SYSTEMS, AIR TRAFFIC CONTROL, DIRECT LIFE
+ * SUPPORT MACHINES, OR WEAPONS SYSTEMS, IN WHICH THE FAILURE OF THE
+ * SOFTWARE COULD LEAD DIRECTLY TO DEATH, PERSONAL INJURY, OR SEVERE
+ * PHYSICAL OR ENVIRONMENTAL DAMAGE (&quot;HIGH RISK ACTIVITIES&quot;).  SUN
+ * SPECIFICALLY DISCLAIMS ANY EXPRESS OR IMPLIED WARRANTY OF FITNESS FOR
+ * HIGH RISK ACTIVITIES.
+ *
+ * @author Patrick Chan
+ * modified to use MediaTracker by
+ * @author Herb Jellinek
+ * modified for 1.1 by
+ * @author Chris Bucchere
+ *
+ */">
+  <superclass name="java.applet.Applet"/>
+  <implement interface="java.lang.Runnable"/>
+  <implement interface="java.awt.event.MouseListener"/>
+  <implement interface="java.awt.event.KeyListener"/>
+  <field name="maxTries" final="true" line="50" col="2" end-line="50" end-col="24" comment="/* This is the maximum number of incorrect guesses. */"><type name="int" primitive="true"/><literal-number kind="integer" value="5"/></field>
+  <field name="maxWordLen" final="true" line="53" col="2" end-line="53" end-col="27" comment="/* This is the maximum length of a secret word. */"><type name="int" primitive="true"/><literal-number kind="integer" value="20"/></field>
+  <field name="secretWord[]" line="56" col="2" end-line="56" end-col="19" comment="/* This buffer holds the letters in the secret word. */"><type name="char" primitive="true"/></field>
+  <field name="secretWordLen" line="59" col="2" end-line="59" end-col="19" comment="/* This is the length of the secret word. */"><type name="int" primitive="true"/></field>
+  <field name="wrongLetters[]" line="63" col="2" end-line="63" end-col="21" comment="/* This buffer holds the letters which the user typed
+     but don't appear in the secret word. */"><type name="char" primitive="true"/></field>
+  <field name="wrongLettersCount" line="66" col="2" end-line="66" end-col="23" comment="/* This is the current number of incorrect guesses. */"><type name="int" primitive="true"/></field>
+  <field name="word[]" line="70" col="2" end-line="70" end-col="13" comment="/* This buffer holds letters that the user has successfully
+     guessed. */"><type name="char" primitive="true"/></field>
+  <field name="wordLen" line="73" col="2" end-line="73" end-col="13" comment="/* Number of correct letters in 'word'. */"><type name="int" primitive="true"/></field>
+  <field name="wordFont" line="76" col="2" end-line="76" end-col="15" comment="/* This is the font used to paint correctly guessed letters. */"><type name="java.awt.Font"/></field>
+  <field name="wordFontMetrics" line="77" col="2" end-line="77" end-col="29" comment=""><type name="java.awt.FontMetrics"/></field>
+  <field name="tracker" line="80" col="2" end-line="80" end-col="22" comment="/* This is the MediaTracker that looks after loading the images. */"><type name="java.awt.MediaTracker"/></field>
+  <field name="DANCECLASS" final="true" static="true" line="83" col="2" end-line="83" end-col="33" comment="/* These are the various classes of images we load */"><type name="int" primitive="true"/><literal-number kind="integer" value="0"/></field>
+  <field name="HANGCLASS" final="true" static="true" line="84" col="2" end-line="84" end-col="32" comment=""><type name="int" primitive="true"/><literal-number kind="integer" value="1"/></field>
+  <field name="hangImages[]" line="87" col="2" end-line="87" end-col="20" comment="/* This is the sequence of images for Duke hanging on the gallows. */"><type name="java.awt.Image"/></field>
+  <field name="hangImagesWidth" final="true" line="88" col="2" end-line="88" end-col="32" comment=""><type name="int" primitive="true"/><literal-number kind="integer" value="39"/></field>
+  <field name="hangImagesHeight" final="true" line="89" col="2" end-line="89" end-col="33" comment=""><type name="int" primitive="true"/><literal-number kind="integer" value="58"/></field>
+  <field name="danceThread" line="94" col="2" end-line="94" end-col="20" comment="// Dancing Duke related variables/* This thread makes Duke dance. */"><type name="java.lang.Thread"/></field>
+  <field name="danceImages[]" line="97" col="2" end-line="97" end-col="21" comment="/* These are the images that make up the dance animation. */"><type name="java.awt.Image"/></field>
+  <field name="danceImageWidths[]" visibility="private" line="98" col="2" end-line="98" end-col="65" comment=""><type name="int" primitive="true"/><array-initializer length="7"><literal-number kind="integer" value="70"/><literal-number kind="integer" value="85"/><literal-number kind="integer" value="87"/><literal-number kind="integer" value="90"/><literal-number kind="integer" value="87"/><literal-number kind="integer" value="85"/><literal-number kind="integer" value="70"/></array-initializer>
+  </field>
+  <field name="danceHeight" line="101" col="2" end-line="101" end-col="22" comment="/* This is the maximum width and height of all the dance images. */"><type name="int" primitive="true"/><literal-number kind="integer" value="68"/></field>
+  <field name="danceImagesLen" line="104" col="2" end-line="104" end-col="24" comment="/* This variable holds the number of valid images in danceImages. */"><type name="int" primitive="true"/><literal-number kind="integer" value="0"/></field>
+  <field name="danceImageOffsets[]" visibility="private" line="109" col="2" end-line="109" end-col="62" comment="/* These offsets refer to the dance images.  The dance images
+     are not of the same size so we need to add these offset 
+     in order to make the images &quot;line&quot; up. */"><type name="int" primitive="true"/><array-initializer length="7"><literal-number kind="integer" value="8"/><literal-number kind="integer" value="0"/><literal-number kind="integer" value="0"/><literal-number kind="integer" value="8"/><literal-number kind="integer" value="18"/><literal-number kind="integer" value="21"/><literal-number kind="integer" value="27"/></array-initializer>
+  </field>
+  <field name="danceSequence[]" visibility="private" line="113" col="2" end-line="114" end-col="70" comment="/* This represents the sequence to display the dance images
+     in order to make Duke &quot;dance&quot;.  */"><type name="int" primitive="true"/><array-initializer length="23"><literal-number kind="integer" value="3"/><literal-number kind="integer" value="4"/><literal-number kind="integer" value="5"/><literal-number kind="integer" value="6"/><literal-number kind="integer" value="6"/><literal-number kind="integer" value="5"/><literal-number kind="integer" value="6"/><literal-number kind="integer" value="6"/><literal-number kind="integer" value="5"/><literal-number kind="integer" value="4"/><literal-number kind="integer" value="3"/><literal-number kind="integer" value="2"/><literal-number kind="integer" value="1"/><literal-number kind="integer" value="0"/><literal-number kind="integer" value="0"/><literal-number kind="integer" value="1"/><literal-number kind="integer" value="2"/><literal-number kind="integer" value="2"/><literal-number kind="integer" value="1"/><literal-number kind="integer" value="0"/><literal-number kind="integer" value="0"/><literal-number kind="integer" value="1"/><literal-number kind="integer" value="2"/></array-initializer>
+  </field>
+  <field name="danceSequenceNum" line="118" col="2" end-line="118" end-col="27" comment="/* This is the current sequence number.  -1 implies
+     that Duke hasn't begun to dance. */"><type name="int" primitive="true"/><unary-expr op="-"><literal-number kind="integer" value="1"/></unary-expr></field>
+  <field name="danceX" line="123" col="2" end-line="123" end-col="16" comment="/* This variable is used to adjust Duke's x-position while
+     he's dancing. */"><type name="int" primitive="true"/><literal-number kind="integer" value="0"/></field>
+  <field name="danceDirection" line="127" col="2" end-line="127" end-col="24" comment="/* This variable specifies the currently x-direction of
+     Duke's dance.  1=&gt;right and -1=&gt;left. */"><type name="int" primitive="true"/><literal-number kind="integer" value="1"/></field>
+  <field name="danceMusic" line="130" col="2" end-line="130" end-col="22" comment="/* This is the stream for the dance music. */"><type name="java.applet.AudioClip"/></field>
+  <method name="init" visibility="public" id="Hangman:mth-205" line="135" col="2" end-line="176" end-col="2" comment="/**
+   * Initialize the applet. Resize and load images.
+   */">
+    <type name="void" primitive="true"/>
+    <formal-arguments/>
+    <block line="135" col="21" end-line="176" end-col="2" comment="">
+      <local-variable name="i" id="Hangman:var-399"><type name="int" primitive="true"/></local-variable>
+      <assignment-expr op="="><lvalue><var-set name="tracker"/></lvalue><new><type name="java.awt.MediaTracker"/><arguments><this/></arguments></new>
+      </assignment-expr>
+      <assignment-expr op="="><lvalue><var-set name="danceMusic"/></lvalue><send message="getAudioClip">
+          <arguments><send message="getDocumentBase">
+              <arguments/>
+            </send>
+            <literal-string value="audio/dance.au"/></arguments>
+        </send>
+      </assignment-expr>
+      <assignment-expr op="="><lvalue><var-set name="danceImages"/></lvalue><new-array dimensions="1"><type name="java.awt.Image"/><dim-expr><literal-number kind="integer" value="40"/></dim-expr></new-array></assignment-expr>
+      <loop kind="for" line="145" col="4" end-line="149" end-col="4" comment="// create tracker// load in dance animation"><init><assignment-expr op="="><lvalue><var-set name="i"/></lvalue><literal-number kind="integer" value="1"/></assignment-expr>
+        </init>
+        <test><binary-expr op="&lt;"><var-ref name="i"/><literal-number kind="integer" value="8"/></binary-expr></test>
+        <update><unary-expr op="++" post="true"><var-ref name="i"/></unary-expr></update>
+        <block line="145" col="28" end-line="149" end-col="4" comment="">
+          <local-variable name="im" id="Hangman:var-444"><type name="java.awt.Image"/><send message="getImage">
+              <arguments><send message="getDocumentBase">
+                  <arguments/>
+                </send>
+                <binary-expr op="+"><binary-expr op="+"><literal-string value="images/dancing-duke/T"/><var-ref name="i"/></binary-expr><literal-string value=".gif"/></binary-expr></arguments>
+            </send>
+          </local-variable>
+          <send message="addImage">
+            <target><var-ref name="tracker"/></target>
+            <arguments><var-ref name="im" idref="Hangman:var-444"/><var-ref name="DANCECLASS"/></arguments>
+          </send>
+          <assignment-expr op="="><lvalue><array-ref><base><var-ref name="danceImages"/></base><offset><unary-expr op="++" post="true"><var-ref name="danceImagesLen"/></unary-expr></offset></array-ref></lvalue><var-ref name="im" idref="Hangman:var-444"/></assignment-expr>
+        </block>
+      </loop>
+      <assignment-expr op="="><lvalue><var-set name="hangImages"/></lvalue><new-array dimensions="1"><type name="java.awt.Image"/><dim-expr><var-ref name="maxTries"/></dim-expr></new-array></assignment-expr>
+      <loop kind="for" line="153" col="4" end-line="157" end-col="4" comment="// load in hangman image sequnce"><init><assignment-expr op="="><lvalue><var-set name="i"/></lvalue><literal-number kind="integer" value="0"/></assignment-expr>
+        </init>
+        <test><binary-expr op="&lt;"><var-ref name="i"/><var-ref name="maxTries"/></binary-expr></test>
+        <update><unary-expr op="++" post="true"><var-ref name="i"/></unary-expr></update>
+        <block line="153" col="31" end-line="157" end-col="4" comment="">
+          <local-variable name="im" id="Hangman:var-493"><type name="java.awt.Image"/><send message="getImage">
+              <arguments><send message="getDocumentBase">
+                  <arguments/>
+                </send>
+                <binary-expr op="+"><binary-expr op="+"><literal-string value="images/hanging-duke/h"/><paren><binary-expr op="+"><var-ref name="i"/><literal-number kind="integer" value="1"/></binary-expr></paren></binary-expr><literal-string value=".gif"/></binary-expr></arguments>
+            </send>
+          </local-variable>
+          <send message="addImage">
+            <target><var-ref name="tracker"/></target>
+            <arguments><var-ref name="im" idref="Hangman:var-493"/><var-ref name="HANGCLASS"/></arguments>
+          </send>
+          <assignment-expr op="="><lvalue><array-ref><base><var-ref name="hangImages"/></base><offset><var-ref name="i"/></offset></array-ref></lvalue><var-ref name="im" idref="Hangman:var-493"/></assignment-expr>
+        </block>
+      </loop>
+      <assignment-expr op="="><lvalue><var-set name="wrongLettersCount"/></lvalue><literal-number kind="integer" value="0"/></assignment-expr>
+      <assignment-expr op="="><lvalue><var-set name="wrongLetters"/></lvalue><new-array dimensions="1"><type name="char" primitive="true"/><dim-expr><var-ref name="maxTries"/></dim-expr></new-array></assignment-expr>
+      <assignment-expr op="="><lvalue><var-set name="secretWordLen"/></lvalue><literal-number kind="integer" value="0"/></assignment-expr>
+      <assignment-expr op="="><lvalue><var-set name="secretWord"/></lvalue><new-array dimensions="1"><type name="char" primitive="true"/><dim-expr><var-ref name="maxWordLen"/></dim-expr></new-array></assignment-expr>
+      <assignment-expr op="="><lvalue><var-set name="word"/></lvalue><new-array dimensions="1"><type name="char" primitive="true"/><dim-expr><var-ref name="maxWordLen"/></dim-expr></new-array></assignment-expr>
+      <assignment-expr op="="><lvalue><var-set name="wordFont"/></lvalue><new><type name="java.awt.Font"/><arguments><literal-string value="Courier"/><field-access field="BOLD"><var-ref name="java.awt.Font"/></field-access><literal-number kind="integer" value="24"/></arguments></new>
+      </assignment-expr>
+      <assignment-expr op="="><lvalue><var-set name="wordFontMetrics"/></lvalue><send message="getFontMetrics">
+          <arguments><var-ref name="wordFont"/></arguments>
+        </send>
+      </assignment-expr>
+      <send message="resize">
+        <arguments><binary-expr op="+"><binary-expr op="*"><paren><binary-expr op="+"><var-ref name="maxWordLen"/><literal-number kind="integer" value="1"/></binary-expr></paren><send message="charWidth">
+                <target><var-ref name="wordFontMetrics"/></target>
+                <arguments><literal-char value="M"/></arguments>
+              </send>
+            </binary-expr><binary-expr op="*"><var-ref name="maxWordLen"/><literal-number kind="integer" value="3"/></binary-expr></binary-expr><binary-expr op="+"><binary-expr op="*"><var-ref name="hangImagesHeight"/><literal-number kind="integer" value="2"/></binary-expr><send message="getHeight">
+              <target><var-ref name="wordFontMetrics"/></target>
+              <arguments/>
+            </send>
+          </binary-expr></arguments>
+      </send>
+      <send message="addMouseListener">
+        <arguments><this/></arguments>
+      </send>
+      <send message="addKeyListener">
+        <arguments><this/></arguments>
+      </send>
+    </block>
+  </method>
+  <method name="paint" visibility="public" id="Hangman:mth-214" line="181" col="2" end-line="245" end-col="4" comment="// initialize the word buffers./**
+   * Paint the screen.
+   */">
+    <type name="void" primitive="true"/>
+    <formal-arguments>
+      <formal-argument name="g" id="Hangman:frm-212"><type name="java.awt.Graphics"/></formal-argument>
+    </formal-arguments>
+    <block line="181" col="32" end-line="245" end-col="4" comment="">
+      <local-variable name="imageW" id="Hangman:var-592"><type name="int" primitive="true"/><var-ref name="hangImagesWidth"/></local-variable>
+      <local-variable name="imageH" id="Hangman:var-597"><type name="int" primitive="true"/><var-ref name="hangImagesHeight"/></local-variable>
+      <local-variable name="baseH" id="Hangman:var-602"><type name="int" primitive="true"/><literal-number kind="integer" value="10"/></local-variable>
+      <local-variable name="baseW" id="Hangman:var-607"><type name="int" primitive="true"/><literal-number kind="integer" value="30"/></local-variable>
+      <local-variable name="font" id="Hangman:var-611"><type name="java.awt.Font"/></local-variable>
+      <local-variable name="fontMetrics" id="Hangman:var-615"><type name="java.awt.FontMetrics"/></local-variable>
+      <local-variable name="i" id="Hangman:var-619"><type name="int" primitive="true"/></local-variable>
+      <local-variable name="x" continued="true" id="Hangman:var-621"><type name="int" primitive="true"/></local-variable>
+      <local-variable name="y" continued="true" id="Hangman:var-623"><type name="int" primitive="true"/></local-variable>
+      <send message="drawLine">
+        <target><var-ref name="g" idref="Hangman:frm-212"/></target>
+        <arguments><binary-expr op="/"><var-ref name="baseW" idref="Hangman:var-607"/><literal-number kind="integer" value="2"/></binary-expr><literal-number kind="integer" value="0"/><binary-expr op="/"><var-ref name="baseW" idref="Hangman:var-607"/><literal-number kind="integer" value="2"/></binary-expr><binary-expr op="-"><binary-expr op="*"><literal-number kind="integer" value="2"/><var-ref name="imageH" idref="Hangman:var-597"/></binary-expr><binary-expr op="/"><var-ref name="baseH" idref="Hangman:var-602"/><literal-number kind="integer" value="2"/></binary-expr></binary-expr></arguments>
+      </send>
+      <send message="drawLine">
+        <target><var-ref name="g" idref="Hangman:frm-212"/></target>
+        <arguments><binary-expr op="/"><var-ref name="baseW" idref="Hangman:var-607"/><literal-number kind="integer" value="2"/></binary-expr><literal-number kind="integer" value="0"/><binary-expr op="+"><var-ref name="baseW" idref="Hangman:var-607"/><binary-expr op="/"><var-ref name="imageW" idref="Hangman:var-592"/><literal-number kind="integer" value="2"/></binary-expr></binary-expr><literal-number kind="integer" value="0"/></arguments>
+      </send>
+      <send message="drawLine">
+        <target><var-ref name="g" idref="Hangman:frm-212"/></target>
+        <arguments><binary-expr op="+"><var-ref name="baseW" idref="Hangman:var-607"/><binary-expr op="/"><var-ref name="imageW" idref="Hangman:var-592"/><literal-number kind="integer" value="2"/></binary-expr></binary-expr><literal-number kind="integer" value="0"/><binary-expr op="+"><var-ref name="baseW" idref="Hangman:var-607"/><binary-expr op="/"><var-ref name="imageW" idref="Hangman:var-592"/><literal-number kind="integer" value="2"/></binary-expr></binary-expr><binary-expr op="/"><var-ref name="imageH" idref="Hangman:var-597"/><literal-number kind="integer" value="3"/></binary-expr></arguments>
+      </send>
+      <send message="fillRect">
+        <target><var-ref name="g" idref="Hangman:frm-212"/></target>
+        <arguments><literal-number kind="integer" value="0"/><binary-expr op="-"><binary-expr op="*"><literal-number kind="integer" value="2"/><var-ref name="imageH" idref="Hangman:var-597"/></binary-expr><var-ref name="baseH" idref="Hangman:var-602"/></binary-expr><var-ref name="baseW" idref="Hangman:var-607"/><var-ref name="baseH" idref="Hangman:var-602"/></arguments>
+      </send>
+      <assignment-expr op="="><lvalue><var-set name="font"/></lvalue><new><type name="java.awt.Font"/><arguments><literal-string value="Courier"/><field-access field="PLAIN"><var-ref name="java.awt.Font"/></field-access><literal-number kind="integer" value="15"/></arguments></new>
+      </assignment-expr>
+      <assignment-expr op="="><lvalue><var-set name="fontMetrics"/></lvalue><send message="getFontMetrics">
+          <arguments><var-ref name="font" idref="Hangman:var-611"/></arguments>
+        </send>
+      </assignment-expr>
+      <assignment-expr op="="><lvalue><var-set name="x"/></lvalue><binary-expr op="+"><var-ref name="imageW" idref="Hangman:var-592"/><var-ref name="baseW" idref="Hangman:var-607"/></binary-expr></assignment-expr>
+      <assignment-expr op="="><lvalue><var-set name="y"/></lvalue><send message="getHeight">
+          <target><var-ref name="fontMetrics" idref="Hangman:var-615"/></target>
+          <arguments/>
+        </send>
+      </assignment-expr>
+      <send message="setFont">
+        <target><var-ref name="g" idref="Hangman:frm-212"/></target>
+        <arguments><var-ref name="font" idref="Hangman:var-611"/></arguments>
+      </send>
+      <send message="setColor">
+        <target><var-ref name="g" idref="Hangman:frm-212"/></target>
+        <arguments><field-access field="red"><var-ref name="java.awt.Color"/></field-access></arguments>
+      </send>
+      <loop kind="for" line="208" col="4" end-line="212" end-col="4" comment="// draw gallows pole// draw gallows rope// draw gallows base// draw list of wrong letters"><init><assignment-expr op="="><lvalue><var-set name="i"/></lvalue><literal-number kind="integer" value="0"/></assignment-expr>
+        </init>
+        <test><binary-expr op="&lt;"><var-ref name="i"/><var-ref name="wrongLettersCount"/></binary-expr></test>
+        <update><unary-expr op="++" post="true"><var-ref name="i"/></unary-expr></update>
+        <block line="208" col="40" end-line="212" end-col="4" comment="">
+          <send message="drawChars">
+            <target><var-ref name="g" idref="Hangman:frm-212"/></target>
+            <arguments><var-ref name="wrongLetters"/><var-ref name="i"/><literal-number kind="integer" value="1"/><var-ref name="x"/><var-ref name="y"/></arguments>
+          </send>
+          <assignment-expr op="+="><lvalue><var-set name="x"/></lvalue><binary-expr op="+"><send message="charWidth">
+                <target><var-ref name="fontMetrics"/></target>
+                <arguments><array-ref><base><var-ref name="wrongLetters"/></base><offset><var-ref name="i"/></offset></array-ref></arguments>
+              </send>
+              <send message="charWidth">
+                <target><var-ref name="fontMetrics"/></target>
+                <arguments><literal-char value=" "/></arguments>
+              </send>
+            </binary-expr></assignment-expr>
+        </block>
+      </loop>
+      <if><test><binary-expr op="&gt;"><var-ref name="secretWordLen"/><literal-number kind="integer" value="0"/></binary-expr></test>
+        <true-case>
+          <block line="214" col="27" end-line="243" end-col="4" comment="">
+            <local-variable name="Mwidth" id="Hangman:var-773"><type name="int" primitive="true"/><send message="charWidth">
+                <target><var-ref name="wordFontMetrics"/></target>
+                <arguments><literal-char value="M"/></arguments>
+              </send>
+            </local-variable>
+            <local-variable name="Mheight" id="Hangman:var-780"><type name="int" primitive="true"/><send message="getHeight">
+                <target><var-ref name="wordFontMetrics"/></target>
+                <arguments/>
+              </send>
+            </local-variable>
+            <send message="setFont">
+              <target><var-ref name="g" idref="Hangman:frm-212"/></target>
+              <arguments><var-ref name="wordFont"/></arguments>
+            </send>
+            <send message="setColor">
+              <target><var-ref name="g" idref="Hangman:frm-212"/></target>
+              <arguments><field-access field="black"><var-ref name="java.awt.Color"/></field-access></arguments>
+            </send>
+            <assignment-expr op="="><lvalue><var-set name="x"/></lvalue><literal-number kind="integer" value="0"/></assignment-expr>
+            <assignment-expr op="="><lvalue><var-set name="y"/></lvalue><binary-expr op="-"><field-access field="height"><send message="getSize">
+                    <arguments/>
+                  </send>
+                </field-access><literal-number kind="integer" value="1"/></binary-expr></assignment-expr>
+            <loop kind="for" line="222" col="6" end-line="225" end-col="6" comment="// draw underlines for secret word"><init><assignment-expr op="="><lvalue><var-set name="i"/></lvalue><literal-number kind="integer" value="0"/></assignment-expr>
+              </init>
+              <test><binary-expr op="&lt;"><var-ref name="i"/><var-ref name="secretWordLen"/></binary-expr></test>
+              <update><unary-expr op="++" post="true"><var-ref name="i"/></unary-expr></update>
+              <block line="222" col="38" end-line="225" end-col="6" comment="">
+                <send message="drawLine">
+                  <target><var-ref name="g" idref="Hangman:frm-212"/></target>
+                  <arguments><var-ref name="x"/><var-ref name="y"/><binary-expr op="+"><var-ref name="x"/><var-ref name="Mwidth"/></binary-expr><var-ref name="y"/></arguments>
+                </send>
+                <assignment-expr op="+="><lvalue><var-set name="x"/></lvalue><binary-expr op="+"><var-ref name="Mwidth"/><literal-number kind="integer" value="3"/></binary-expr></assignment-expr>
+              </block>
+            </loop>
+            <assignment-expr op="="><lvalue><var-set name="x"/></lvalue><literal-number kind="integer" value="0"/></assignment-expr>
+            <assignment-expr op="="><lvalue><var-set name="y"/></lvalue><binary-expr op="-"><field-access field="height"><send message="getSize">
+                    <arguments/>
+                  </send>
+                </field-access><literal-number kind="integer" value="3"/></binary-expr></assignment-expr>
+            <send message="setColor">
+              <target><var-ref name="g" idref="Hangman:frm-212"/></target>
+              <arguments><field-access field="blue"><var-ref name="java.awt.Color"/></field-access></arguments>
+            </send>
+            <loop kind="for" line="231" col="6" end-line="236" end-col="6" comment="// draw known letters in secret word"><init><assignment-expr op="="><lvalue><var-set name="i"/></lvalue><literal-number kind="integer" value="0"/></assignment-expr>
+              </init>
+              <test><binary-expr op="&lt;"><var-ref name="i"/><var-ref name="secretWordLen"/></binary-expr></test>
+              <update><unary-expr op="++" post="true"><var-ref name="i"/></unary-expr></update>
+              <block line="231" col="38" end-line="236" end-col="6" comment="">
+                <if><test><binary-expr op="!="><array-ref><base><var-ref name="word"/></base><offset><var-ref name="i"/></offset></array-ref><literal-number kind="integer" value="0"/></binary-expr></test>
+                  <true-case>
+                    <block line="232" col="26" end-line="234" end-col="8" comment="">
+                      <send message="drawChars">
+                        <target><var-ref name="g" idref="Hangman:frm-212"/></target>
+                        <arguments><var-ref name="word"/><var-ref name="i"/><literal-number kind="integer" value="1"/><var-ref name="x"/><var-ref name="y"/></arguments>
+                      </send>
+                    </block>
+                  </true-case>
+                </if>
+                <assignment-expr op="+="><lvalue><var-set name="x"/></lvalue><binary-expr op="+"><var-ref name="Mwidth"/><literal-number kind="integer" value="3"/></binary-expr></assignment-expr>
+              </block>
+            </loop>
+            <if><test><binary-expr op="&amp;&amp;"><binary-expr op="&lt;"><var-ref name="wordLen"/><var-ref name="secretWordLen"/></binary-expr><binary-expr op="&gt;"><var-ref name="wrongLettersCount"/><literal-number kind="integer" value="0"/></binary-expr></binary-expr></test>
+              <true-case>
+                <block line="238" col="60" end-line="242" end-col="6" comment="">
+                  <send message="drawImage">
+                    <target><var-ref name="g" idref="Hangman:frm-212"/></target>
+                    <arguments><array-ref><base><var-ref name="hangImages"/></base><offset><binary-expr op="-"><var-ref name="wrongLettersCount"/><literal-number kind="integer" value="1"/></binary-expr></offset></array-ref><var-ref name="baseW"/><binary-expr op="/"><var-ref name="imageH"/><literal-number kind="integer" value="3"/></binary-expr><this/></arguments>
+                  </send>
+                </block>
+              </true-case>
+            </if>
+          </block>
+        </true-case>
+      </if>
+    </block>
+  </method>
+  <method name="update" visibility="public" id="Hangman:mth-223" line="247" col="2" end-line="261" end-col="2" comment="// draw Duke on gallows">
+    <type name="void" primitive="true"/>
+    <formal-arguments>
+      <formal-argument name="g" id="Hangman:frm-221"><type name="java.awt.Graphics"/></formal-argument>
+    </formal-arguments>
+    <block line="247" col="33" end-line="261" end-col="2" comment="">
+      <if><test><binary-expr op="=="><var-ref name="wordLen"/><literal-number kind="integer" value="0"/></binary-expr></test>
+        <true-case>
+          <block line="248" col="22" end-line="251" end-col="4" comment="">
+            <send message="clearRect">
+              <target><var-ref name="g" idref="Hangman:frm-221"/></target>
+              <arguments><literal-number kind="integer" value="0"/><literal-number kind="integer" value="0"/><field-access field="width"><send message="getSize">
+                    <arguments/>
+                  </send>
+                </field-access><field-access field="height"><send message="getSize">
+                    <arguments/>
+                  </send>
+                </field-access></arguments>
+            </send>
+            <send message="paint">
+              <arguments><var-ref name="g" idref="Hangman:frm-221"/></arguments>
+            </send>
+          </block>
+        </true-case>
+        <false-case>
+          <if><test><binary-expr op="=="><var-ref name="wordLen"/><var-ref name="secretWordLen"/></binary-expr></test>
+            <true-case>
+              <block line="251" col="41" end-line="258" end-col="4" comment="">
+                <if><test><binary-expr op="&lt;"><var-ref name="danceSequenceNum"/><literal-number kind="integer" value="0"/></binary-expr></test>
+                  <true-case>
+                    <block line="252" col="32" end-line="256" end-col="6" comment="">
+                      <send message="clearRect">
+                        <target><var-ref name="g" idref="Hangman:frm-221"/></target>
+                        <arguments><literal-number kind="integer" value="0"/><literal-number kind="integer" value="0"/><field-access field="width"><send message="getSize">
+                              <arguments/>
+                            </send>
+                          </field-access><field-access field="height"><send message="getSize">
+                              <arguments/>
+                            </send>
+                          </field-access></arguments>
+                      </send>
+                      <send message="paint">
+                        <arguments><var-ref name="g" idref="Hangman:frm-221"/></arguments>
+                      </send>
+                      <assignment-expr op="="><lvalue><var-set name="danceSequenceNum"/></lvalue><literal-number kind="integer" value="0"/></assignment-expr>
+                    </block>
+                  </true-case>
+                </if>
+                <send message="updateDancingDuke">
+                  <arguments><var-ref name="g" idref="Hangman:frm-221"/></arguments>
+                </send>
+              </block>
+            </true-case>
+            <false-case>
+              <block line="258" col="11" end-line="260" end-col="4" comment="">
+                <send message="paint">
+                  <arguments><var-ref name="g" idref="Hangman:frm-221"/></arguments>
+                </send>
+              </block>
+            </false-case>
+          </if>
+        </false-case>
+      </if>
+    </block>
+  </method>
+  <method name="updateDancingDuke" id="Hangman:mth-231" line="263" col="2" end-line="297" end-col="2" comment="">
+    <type name="void" primitive="true"/>
+    <formal-arguments>
+      <formal-argument name="g" id="Hangman:frm-229"><type name="java.awt.Graphics"/></formal-argument>
+    </formal-arguments>
+    <block line="263" col="37" end-line="297" end-col="2" comment="">
+      <local-variable name="baseW" id="Hangman:var-978"><type name="int" primitive="true"/><literal-number kind="integer" value="30"/></local-variable>
+      <local-variable name="imageH" id="Hangman:var-983"><type name="int" primitive="true"/><var-ref name="hangImagesHeight"/></local-variable>
+      <local-variable name="danceImageNum" id="Hangman:var-990"><type name="int" primitive="true"/><array-ref><base><var-ref name="danceSequence"/></base><offset><var-ref name="danceSequenceNum"/></offset></array-ref></local-variable>
+      <send message="clearRect">
+        <target><var-ref name="g" idref="Hangman:frm-229"/></target>
+        <arguments><binary-expr op="+"><var-ref name="danceX"/><var-ref name="baseW" idref="Hangman:var-978"/></binary-expr><binary-expr op="-"><binary-expr op="*"><var-ref name="imageH" idref="Hangman:var-983"/><literal-number kind="integer" value="2"/></binary-expr><var-ref name="danceHeight"/></binary-expr><binary-expr op="+"><array-ref><base><var-ref name="danceImageOffsets"/></base><offset><var-ref name="danceImageNum" idref="Hangman:var-990"/></offset></array-ref><array-ref><base><var-ref name="danceImageWidths"/></base><offset><var-ref name="danceImageNum" idref="Hangman:var-990"/></offset></array-ref></binary-expr><var-ref name="danceHeight"/></arguments>
+      </send>
+      <assignment-expr op="+="><lvalue><var-set name="danceX"/></lvalue><var-ref name="danceDirection"/></assignment-expr>
+      <if><test><binary-expr op="&lt;"><var-ref name="danceX"/><literal-number kind="integer" value="0"/></binary-expr></test>
+        <true-case>
+          <block line="275" col="20" end-line="277" end-col="4" comment="// first, clear Duke's current image// update dance position">
+            <assignment-expr op="="><lvalue><var-set name="danceX"/></lvalue><assignment-expr op="="><lvalue><var-set name="danceDirection"/></lvalue><binary-expr op="+"><cast-expr><type name="int" primitive="true"/><send message="floor">
+                      <target><var-ref name="java.lang.Math"/></target>
+                      <arguments><binary-expr op="*"><send message="random">
+                            <target><var-ref name="java.lang.Math"/></target>
+                            <arguments/>
+                          </send>
+                          <literal-number kind="integer" value="12"/></binary-expr></arguments>
+                    </send>
+                  </cast-expr><literal-number kind="integer" value="5"/></binary-expr></assignment-expr>
+            </assignment-expr>
+          </block>
+        </true-case>
+        <false-case>
+          <if><test><binary-expr op="&gt;"><binary-expr op="+"><var-ref name="danceX"/><var-ref name="baseW"/></binary-expr><binary-expr op="/"><field-access field="width"><send message="getSize">
+                      <arguments/>
+                    </send>
+                  </field-access><literal-number kind="integer" value="2"/></binary-expr></binary-expr></test>
+            <true-case>
+              <block line="277" col="53" end-line="280" end-col="4" comment="">
+                <assignment-expr op="*="><lvalue><var-set name="danceDirection"/></lvalue><unary-expr op="-"><literal-number kind="integer" value="1"/></unary-expr></assignment-expr>
+              </block>
+            </true-case>
+            <false-case>
+              <if><test><binary-expr op="&gt;"><send message="random">
+                      <target><var-ref name="java.lang.Math"/></target>
+                      <arguments/>
+                    </send>
+                    <literal-number kind="float" value=".9f"/></binary-expr></test>
+                <true-case>
+                  <block line="280" col="36" end-line="282" end-col="4" comment="//danceDirection = -(int)java.lang.Math.floor(java.lang.Math.random() * 12) - 5;">
+                    <assignment-expr op="*="><lvalue><var-set name="danceDirection"/></lvalue><unary-expr op="-"><literal-number kind="integer" value="1"/></unary-expr></assignment-expr>
+                  </block>
+                </true-case>
+              </if>
+            </false-case>
+          </if>
+        </false-case>
+      </if>
+      <unary-expr op="++" post="true"><var-ref name="danceSequenceNum"/></unary-expr><if><test><binary-expr op="&gt;="><var-ref name="danceSequenceNum"/><field-access field="length"><var-ref name="danceSequence"/></field-access></binary-expr></test>
+        <true-case>
+          <block line="286" col="50" end-line="288" end-col="4" comment="// update dance sequence">
+            <assignment-expr op="="><lvalue><var-set name="danceSequenceNum"/></lvalue><literal-number kind="integer" value="0"/></assignment-expr>
+          </block>
+        </true-case>
+      </if>
+      <assignment-expr op="="><lvalue><var-set name="danceImageNum"/></lvalue><array-ref><base><var-ref name="danceSequence"/></base><offset><var-ref name="danceSequenceNum"/></offset></array-ref></assignment-expr>
+      <if><test><binary-expr op="&amp;&amp;"><paren><binary-expr op="&lt;"><var-ref name="danceImageNum" idref="Hangman:var-990"/><var-ref name="danceImagesLen"/></binary-expr></paren><paren><binary-expr op="!="><array-ref><base><var-ref name="danceImages"/></base><offset><var-ref name="danceImageNum" idref="Hangman:var-990"/></offset></array-ref><literal-null/></binary-expr></paren></binary-expr></test>
+        <true-case>
+          <block line="292" col="82" end-line="296" end-col="4" comment="// now paint Duke's new image">
+            <send message="drawImage">
+              <target><var-ref name="g" idref="Hangman:frm-229"/></target>
+              <arguments><array-ref><base><var-ref name="danceImages"/></base><offset><var-ref name="danceImageNum"/></offset></array-ref><binary-expr op="+"><binary-expr op="+"><var-ref name="danceX"/><var-ref name="baseW"/></binary-expr><array-ref><base><var-ref name="danceImageOffsets"/></base><offset><var-ref name="danceImageNum"/></offset></array-ref></binary-expr><binary-expr op="-"><binary-expr op="*"><var-ref name="imageH"/><literal-number kind="integer" value="2"/></binary-expr><var-ref name="danceHeight"/></binary-expr><this/></arguments>
+            </send>
+          </block>
+        </true-case>
+      </if>
+    </block>
+  </method>
+  <method name="newGame" visibility="public" id="Hangman:mth-236" line="303" col="2" end-line="328" end-col="2" comment="/**
+   * Starts a new game.  Chooses a new secret word
+   * and clears all the buffers
+   */">
+    <type name="void" primitive="true"/>
+    <formal-arguments/>
+    <block line="303" col="24" end-line="328" end-col="2" comment="">
+      <local-variable name="i" id="Hangman:var-1123"><type name="int" primitive="true"/></local-variable>
+      <assignment-expr op="="><lvalue><var-set name="danceThread"/></lvalue><literal-null/></assignment-expr>
+      <local-variable name="s" id="Hangman:var-1144"><type name="java.lang.String"/><array-ref><base><var-ref name="wordlist"/></base><offset><cast-expr><type name="int" primitive="true"/><send message="floor">
+                <target><var-ref name="java.lang.Math"/></target>
+                <arguments><binary-expr op="*"><send message="random">
+                      <target><var-ref name="java.lang.Math"/></target>
+                      <arguments/>
+                    </send>
+                    <field-access field="length"><var-ref name="wordlist"/></field-access></binary-expr></arguments>
+              </send>
+            </cast-expr></offset></array-ref></local-variable>
+      <assignment-expr op="="><lvalue><var-set name="secretWordLen"/></lvalue><send message="min">
+          <target><var-ref name="java.lang.Math"/></target>
+          <arguments><send message="length">
+              <target><var-ref name="s" idref="Hangman:var-1144"/></target>
+              <arguments/>
+            </send>
+            <var-ref name="maxWordLen"/></arguments>
+        </send>
+      </assignment-expr>
+      <loop kind="for" line="313" col="4" end-line="315" end-col="4" comment="// stop animation thread.// pick secret word"><init><assignment-expr op="="><lvalue><var-set name="i"/></lvalue><literal-number kind="integer" value="0"/></assignment-expr>
+        </init>
+        <test><binary-expr op="&lt;"><var-ref name="i"/><var-ref name="secretWordLen"/></binary-expr></test>
+        <update><unary-expr op="++" post="true"><var-ref name="i"/></unary-expr></update>
+        <block line="313" col="36" end-line="315" end-col="4" comment="">
+          <assignment-expr op="="><lvalue><array-ref><base><var-ref name="secretWord"/></base><offset><var-ref name="i"/></offset></array-ref></lvalue><send message="charAt">
+              <target><var-ref name="s"/></target>
+              <arguments><var-ref name="i"/></arguments>
+            </send>
+          </assignment-expr>
+        </block>
+      </loop>
+      <loop kind="for" line="318" col="4" end-line="320" end-col="4" comment="// clear word buffers"><init><assignment-expr op="="><lvalue><var-set name="i"/></lvalue><literal-number kind="integer" value="0"/></assignment-expr>
+        </init>
+        <test><binary-expr op="&lt;"><var-ref name="i"/><var-ref name="maxWordLen"/></binary-expr></test>
+        <update><unary-expr op="++" post="true"><var-ref name="i"/></unary-expr></update>
+        <block line="318" col="33" end-line="320" end-col="4" comment="">
+          <assignment-expr op="="><lvalue><array-ref><base><var-ref name="word"/></base><offset><var-ref name="i"/></offset></array-ref></lvalue><literal-number kind="integer" value="0"/></assignment-expr>
+        </block>
+      </loop>
+      <assignment-expr op="="><lvalue><var-set name="wordLen"/></lvalue><literal-number kind="integer" value="0"/></assignment-expr>
+      <loop kind="for" line="322" col="4" end-line="324" end-col="4" comment=""><init><assignment-expr op="="><lvalue><var-set name="i"/></lvalue><literal-number kind="integer" value="0"/></assignment-expr>
+        </init>
+        <test><binary-expr op="&lt;"><var-ref name="i"/><var-ref name="maxTries"/></binary-expr></test>
+        <update><unary-expr op="++" post="true"><var-ref name="i"/></unary-expr></update>
+        <block line="322" col="31" end-line="324" end-col="4" comment="">
+          <assignment-expr op="="><lvalue><array-ref><base><var-ref name="wrongLetters"/></base><offset><var-ref name="i"/></offset></array-ref></lvalue><literal-number kind="integer" value="0"/></assignment-expr>
+        </block>
+      </loop>
+      <assignment-expr op="="><lvalue><var-set name="wrongLettersCount"/></lvalue><literal-number kind="integer" value="0"/></assignment-expr>
+      <send message="repaint">
+        <arguments/>
+      </send>
+    </block>
+  </method>
+  <method name="start" visibility="public" id="Hangman:mth-241" line="333" col="2" end-line="344" end-col="2" comment="/**
+   * Start the applet.
+   */">
+    <type name="void" primitive="true"/>
+    <formal-arguments/>
+    <block line="333" col="22" end-line="344" end-col="2" comment="">
+      <send message="requestFocus">
+        <arguments/>
+      </send>
+      <try>
+        <block line="335" col="8" end-line="337" end-col="4" comment="">
+          <send message="waitForID">
+            <target><var-ref name="tracker"/></target>
+            <arguments><var-ref name="HANGCLASS"/></arguments>
+          </send>
+        </block>
+        <catch><formal-argument name="e" id="Hangman:var-1240"><type name="java.lang.InterruptedException"/></formal-argument>
+        </catch>
+      </try>
+      <send message="checkAll">
+        <target><var-ref name="tracker"/></target>
+        <arguments><literal-boolean value="true"/></arguments>
+      </send>
+      <if><test><binary-expr op="||"><binary-expr op="=="><var-ref name="secretWordLen"/><var-ref name="wordLen"/></binary-expr><binary-expr op="=="><var-ref name="wrongLettersCount"/><var-ref name="maxTries"/></binary-expr></binary-expr></test>
+        <true-case>
+          <block line="341" col="67" end-line="343" end-col="4" comment="// Start a new game only if user has won or lost; otherwise// retain the same game.">
+            <send message="newGame">
+              <arguments/>
+            </send>
+          </block>
+        </true-case>
+      </if>
+    </block>
+  </method>
+  <method name="stop" visibility="public" id="Hangman:mth-246" line="349" col="2" end-line="351" end-col="2" comment="/**
+   * Stop the applet.  Stop the danceThread.
+   */">
+    <type name="void" primitive="true"/>
+    <formal-arguments/>
+    <block line="349" col="21" end-line="351" end-col="2" comment="">
+      <assignment-expr op="="><lvalue><var-set name="danceThread"/></lvalue><literal-null/></assignment-expr>
+    </block>
+  </method>
+  <method name="run" visibility="public" id="Hangman:mth-251" line="357" col="2" end-line="375" end-col="2" comment="/**
+   * Run Duke's dancing animation. This method is called by class Thread.
+   * @see java.lang.Thread
+   */">
+    <type name="void" primitive="true"/>
+    <formal-arguments/>
+    <block line="357" col="20" end-line="375" end-col="2" comment="">
+      <try>
+        <block line="358" col="8" end-line="360" end-col="4" comment="">
+          <send message="waitForID">
+            <target><var-ref name="tracker"/></target>
+            <arguments><var-ref name="DANCECLASS"/></arguments>
+          </send>
+        </block>
+        <catch><formal-argument name="e" id="Hangman:var-1276"><type name="java.lang.InterruptedException"/></formal-argument>
+        </catch>
+      </try>
+      <send message="setPriority">
+        <target><send message="currentThread">
+            <target><var-ref name="java.lang.Thread"/></target>
+            <arguments/>
+          </send>
+        </target>
+        <arguments><field-access field="MIN_PRIORITY"><var-ref name="java.lang.Thread"/></field-access></arguments>
+      </send>
+      <send message="loop">
+        <target><var-ref name="danceMusic"/></target>
+        <arguments/>
+      </send>
+      <loop kind="while" line="368" col="4" end-line="371" end-col="4" comment="// start the dancing music.// increment the sequence count and invoke the paint method."><test><binary-expr op="&amp;&amp;"><binary-expr op="&amp;&amp;"><binary-expr op="&gt;"><field-access field="width"><send message="getSize">
+                    <arguments/>
+                  </send>
+                </field-access><literal-number kind="integer" value="0"/></binary-expr><binary-expr op="&gt;"><field-access field="height"><send message="getSize">
+                    <arguments/>
+                  </send>
+                </field-access><literal-number kind="integer" value="0"/></binary-expr></binary-expr><binary-expr op="!="><var-ref name="danceThread"/><literal-null/></binary-expr></binary-expr></test><block line="368" col="79" end-line="371" end-col="4" comment="">
+          <send message="repaint">
+            <arguments/>
+          </send>
+          <try>
+            <block line="370" col="10" end-line="370" end-col="29" comment="">
+              <send message="sleep">
+                <target><var-ref name="java.lang.Thread"/></target>
+                <arguments><literal-number kind="integer" value="100"/></arguments>
+              </send>
+            </block>
+            <catch><formal-argument name="e" id="Hangman:var-1319"><type name="java.lang.InterruptedException"/></formal-argument>
+            </catch>
+          </try>
+        </block>
+      </loop>
+      <send message="stop">
+        <target><var-ref name="danceMusic"/></target>
+        <arguments/>
+      </send>
+    </block>
+  </method>
+  <method name="startDukeDancing" visibility="private" id="Hangman:mth-256" line="380" col="2" end-line="385" end-col="2" comment="// The dance is done so stop the music./**
+   * Starts Duke's dancing animation.
+   */">
+    <type name="void" primitive="true"/>
+    <formal-arguments/>
+    <block line="380" col="35" end-line="385" end-col="2" comment="">
+      <if><test><binary-expr op="=="><var-ref name="danceThread"/><literal-null/></binary-expr></test>
+        <true-case>
+          <block line="381" col="29" end-line="384" end-col="4" comment="">
+            <assignment-expr op="="><lvalue><var-set name="danceThread"/></lvalue><new><type name="java.lang.Thread"/><arguments><this/></arguments></new>
+            </assignment-expr>
+            <send message="start">
+              <target><var-ref name="danceThread"/></target>
+              <arguments/>
+            </send>
+          </block>
+        </true-case>
+      </if>
+    </block>
+  </method>
+  <method name="getAppletInfo" visibility="public" id="Hangman:mth-262" line="388" col="2" end-line="390" end-col="2" comment="// Added by Kevin A. Smith 10/25/95">
+    <type name="java.lang.String"/>
+    <formal-arguments/>
+    <block line="388" col="32" end-line="390" end-col="2" comment="">
+      <return><literal-string value="Author: Patrick Chan\nVersion 1.5"/></return>
+    </block>
+  </method>
+  <field name="wordlist[]" line="394" col="2" end-line="439" end-col="18" comment="/* This is the hangman's limited word list. */"><type name="java.lang.String"/><array-initializer length="45"><literal-string value="abstraction"/><literal-string value="ambiguous"/><literal-string value="arithmetic"/><literal-string value="backslash"/><literal-string value="bitmap"/><literal-string value="circumstance"/><literal-string value="combination"/><literal-string value="consequently"/><literal-string value="consortium"/><literal-string value="decrementing"/><literal-string value="dependency"/><literal-string value="disambiguate"/><literal-string value="dynamic"/><literal-string value="encapsulation"/><literal-string value="equivalent"/><literal-string value="expression"/><literal-string value="facilitate"/><literal-string value="fragment"/><literal-string value="hexadecimal"/><literal-string value="implementation"/><literal-string value="indistinguishable"/><literal-string value="inheritance"/><literal-string value="internet"/><literal-string value="java"/><literal-string value="localization"/><literal-string value="microprocessor"/><literal-string value="navigation"/><literal-string value="optimization"/><literal-string value="parameter"/><literal-string value="patrick"/><literal-string value="pickle"/><literal-string value="polymorphic"/><literal-string value="rigorously"/><literal-string value="simultaneously"/><literal-string value="specification"/><literal-string value="structure"/><literal-string value="lexical"/><literal-string value="likewise"/><literal-string value="management"/><literal-string value="manipulate"/><literal-string value="mathematics"/><literal-string value="hotjava"/><literal-string value="vertex"/><literal-string value="unsigned"/><literal-string value="traditional"/></array-initializer>
+  </field>
+  <method name="keyPressed" visibility="public" id="Hangman:mth-321" line="442" col="2" end-line="443" end-col="2" comment="/* key tracking methods */">
+    <type name="void" primitive="true"/>
+    <formal-arguments>
+      <formal-argument name="e" id="Hangman:frm-319"><type name="java.awt.event.KeyEvent"/></formal-argument>
+    </formal-arguments>
+    <block line="442" col="37" end-line="443" end-col="2" comment="">
+    </block>
+  </method>
+  <method name="keyReleased" visibility="public" id="Hangman:mth-330" line="445" col="2" end-line="522" end-col="2" comment="">
+    <type name="void" primitive="true"/>
+    <formal-arguments>
+      <formal-argument name="e" id="Hangman:frm-328"><type name="java.awt.event.KeyEvent"/></formal-argument>
+    </formal-arguments>
+    <block line="445" col="38" end-line="522" end-col="2" comment="">
+      <local-variable name="i" id="Hangman:var-1354"><type name="int" primitive="true"/></local-variable>
+      <local-variable name="found" id="Hangman:var-1359"><type name="boolean" primitive="true"/><literal-boolean value="false"/></local-variable>
+      <local-variable name="key" id="Hangman:var-1366"><type name="char" primitive="true"/><send message="getKeyChar">
+          <target><var-ref name="e" idref="Hangman:frm-328"/></target>
+          <arguments/>
+        </send>
+      </local-variable>
+      <if><test><binary-expr op="||"><binary-expr op="=="><var-ref name="secretWordLen"/><var-ref name="wordLen"/></binary-expr><binary-expr op="=="><var-ref name="wrongLettersCount"/><var-ref name="maxTries"/></binary-expr></binary-expr></test>
+        <true-case>
+          <block line="451" col="67" end-line="455" end-col="4" comment="// start new game if user has already won or lost.">
+            <send message="newGame">
+              <arguments/>
+            </send>
+            <send message="consume">
+              <target><var-ref name="e" idref="Hangman:frm-328"/></target>
+              <arguments/>
+            </send>
+            <return/>
+          </block>
+        </true-case>
+      </if>
+      <if><test><binary-expr op="||"><binary-expr op="&lt;"><var-ref name="key" idref="Hangman:var-1366"/><literal-char value="a"/></binary-expr><binary-expr op="&gt;"><var-ref name="key" idref="Hangman:var-1366"/><literal-char value="z"/></binary-expr></binary-expr></test>
+        <true-case>
+          <block line="458" col="32" end-line="462" end-col="4" comment="// check if valid letter">
+            <send message="play">
+              <arguments><send message="getDocumentBase">
+                  <arguments/>
+                </send>
+                <literal-string value="audio/beep.au"/></arguments>
+            </send>
+            <send message="consume">
+              <target><var-ref name="e" idref="Hangman:frm-328"/></target>
+              <arguments/>
+            </send>
+            <return/>
+          </block>
+        </true-case>
+      </if>
+      <loop kind="for" line="464" col="4" end-line="471" end-col="4" comment="// check if already in secret word"><init><assignment-expr op="="><lvalue><var-set name="i"/></lvalue><literal-number kind="integer" value="0"/></assignment-expr>
+        </init>
+        <test><binary-expr op="&lt;"><var-ref name="i"/><var-ref name="secretWordLen"/></binary-expr></test>
+        <update><unary-expr op="++" post="true"><var-ref name="i"/></unary-expr></update>
+        <if><test><binary-expr op="=="><var-ref name="key"/><array-ref><base><var-ref name="word"/></base><offset><var-ref name="i"/></offset></array-ref></binary-expr></test>
+          <true-case>
+            <block line="465" col="26" end-line="470" end-col="6" comment="">
+              <assignment-expr op="="><lvalue><var-set name="found"/></lvalue><literal-boolean value="true"/></assignment-expr>
+              <send message="play">
+                <arguments><send message="getDocumentBase">
+                    <arguments/>
+                  </send>
+                  <literal-string value="audio/ding.au"/></arguments>
+              </send>
+              <send message="consume">
+                <target><var-ref name="e" idref="Hangman:frm-328"/></target>
+                <arguments/>
+              </send>
+              <return/>
+            </block>
+          </true-case>
+        </if>
+      </loop>
+      <if><test><unary-expr op="!"><var-ref name="found" idref="Hangman:var-1359"/></unary-expr></test>
+        <true-case>
+          <block line="473" col="16" end-line="482" end-col="4" comment="// check if already in wrongLetters">
+            <loop kind="for" line="474" col="6" end-line="481" end-col="6" comment=""><init><assignment-expr op="="><lvalue><var-set name="i"/></lvalue><literal-number kind="integer" value="0"/></assignment-expr>
+              </init>
+              <test><binary-expr op="&lt;"><var-ref name="i"/><var-ref name="maxTries"/></binary-expr></test>
+              <update><unary-expr op="++" post="true"><var-ref name="i"/></unary-expr></update>
+              <if><test><binary-expr op="=="><var-ref name="key"/><array-ref><base><var-ref name="wrongLetters"/></base><offset><var-ref name="i"/></offset></array-ref></binary-expr></test>
+                <true-case>
+                  <block line="475" col="36" end-line="480" end-col="8" comment="">
+                    <assignment-expr op="="><lvalue><var-set name="found"/></lvalue><literal-boolean value="true"/></assignment-expr>
+                    <send message="play">
+                      <arguments><send message="getDocumentBase">
+                          <arguments/>
+                        </send>
+                        <literal-string value="audio/ding.au"/></arguments>
+                    </send>
+                    <send message="consume">
+                      <target><var-ref name="e" idref="Hangman:frm-328"/></target>
+                      <arguments/>
+                    </send>
+                    <return/>
+                  </block>
+                </true-case>
+              </if>
+            </loop>
+          </block>
+        </true-case>
+      </if>
+      <if><test><unary-expr op="!"><var-ref name="found" idref="Hangman:var-1359"/></unary-expr></test>
+        <true-case>
+          <block line="484" col="16" end-line="500" end-col="4" comment="// is letter in secret word? If so, add it.">
+            <loop kind="for" line="485" col="6" end-line="491" end-col="6" comment=""><init><assignment-expr op="="><lvalue><var-set name="i"/></lvalue><literal-number kind="integer" value="0"/></assignment-expr>
+              </init>
+              <test><binary-expr op="&lt;"><var-ref name="i"/><var-ref name="secretWordLen"/></binary-expr></test>
+              <update><unary-expr op="++" post="true"><var-ref name="i"/></unary-expr></update>
+              <if><test><binary-expr op="=="><var-ref name="key"/><array-ref><base><var-ref name="secretWord"/></base><offset><var-ref name="i"/></offset></array-ref></binary-expr></test>
+                <true-case>
+                  <block line="486" col="34" end-line="490" end-col="8" comment="">
+                    <assignment-expr op="="><lvalue><array-ref><base><var-ref name="word"/></base><offset><var-ref name="i"/></offset></array-ref></lvalue><cast-expr><type name="char" primitive="true"/><var-ref name="key"/></cast-expr></assignment-expr>
+                    <unary-expr op="++" post="true"><var-ref name="wordLen"/></unary-expr><assignment-expr op="="><lvalue><var-set name="found"/></lvalue><literal-boolean value="true"/></assignment-expr>
+                  </block>
+                </true-case>
+              </if>
+            </loop>
+            <if><test><var-ref name="found"/></test>
+              <true-case>
+                <if><test><binary-expr op="=="><var-ref name="wordLen"/><var-ref name="secretWordLen"/></binary-expr></test>
+                  <true-case>
+                    <block line="493" col="38" end-line="496" end-col="8" comment="">
+                      <send message="play">
+                        <arguments><send message="getDocumentBase">
+                            <arguments/>
+                          </send>
+                          <literal-string value="audio/whoopy.au"/></arguments>
+                      </send>
+                      <send message="startDukeDancing">
+                        <arguments/>
+                      </send>
+                    </block>
+                  </true-case>
+                  <false-case>
+                    <block line="496" col="15" end-line="498" end-col="8" comment="">
+                      <send message="play">
+                        <arguments><send message="getDocumentBase">
+                            <arguments/>
+                          </send>
+                          <literal-string value="audio/ah.au"/></arguments>
+                      </send>
+                    </block>
+                  </false-case>
+                </if>
+              </true-case>
+            </if>
+          </block>
+        </true-case>
+      </if>
+      <if><test><unary-expr op="!"><var-ref name="found" idref="Hangman:var-1359"/></unary-expr></test>
+        <true-case>
+          <if><test><binary-expr op="&lt;"><var-ref name="wrongLettersCount"/><field-access field="length"><var-ref name="wrongLetters"/></field-access></binary-expr></test>
+            <true-case>
+              <block line="503" col="51" end-line="514" end-col="6" comment="// wrong letter; add to wrongLetters">
+                <assignment-expr op="="><lvalue><array-ref><base><var-ref name="wrongLetters"/></base><offset><unary-expr op="++" post="true"><var-ref name="wrongLettersCount"/></unary-expr></offset></array-ref></lvalue><cast-expr><type name="char" primitive="true"/><var-ref name="key"/></cast-expr></assignment-expr>
+                <if><test><binary-expr op="&lt;"><var-ref name="wrongLettersCount"/><var-ref name="maxTries"/></binary-expr></test>
+                  <true-case>
+                    <block line="505" col="42" end-line="507" end-col="8" comment="">
+                      <send message="play">
+                        <arguments><send message="getDocumentBase">
+                            <arguments/>
+                          </send>
+                          <literal-string value="audio/ooh.au"/></arguments>
+                      </send>
+                    </block>
+                  </true-case>
+                  <false-case>
+                    <block line="507" col="15" end-line="513" end-col="8" comment="">
+                      <loop kind="for" line="509" col="10" end-line="511" end-col="10" comment="// show the answer"><init><assignment-expr op="="><lvalue><var-set name="i"/></lvalue><literal-number kind="integer" value="0"/></assignment-expr>
+                        </init>
+                        <test><binary-expr op="&lt;"><var-ref name="i"/><var-ref name="secretWordLen"/></binary-expr></test>
+                        <update><unary-expr op="++" post="true"><var-ref name="i"/></unary-expr></update>
+                        <block line="509" col="42" end-line="511" end-col="10" comment="">
+                          <assignment-expr op="="><lvalue><array-ref><base><var-ref name="word"/></base><offset><var-ref name="i"/></offset></array-ref></lvalue><array-ref><base><var-ref name="secretWord"/></base><offset><var-ref name="i"/></offset></array-ref></assignment-expr>
+                        </block>
+                      </loop>
+                      <send message="play">
+                        <arguments><send message="getDocumentBase">
+                            <arguments/>
+                          </send>
+                          <literal-string value="audio/scream.au"/></arguments>
+                      </send>
+                    </block>
+                  </false-case>
+                </if>
+              </block>
+            </true-case>
+          </if>
+        </true-case>
+      </if>
+      <if><test><binary-expr op="=="><var-ref name="wordLen"/><var-ref name="secretWordLen"/></binary-expr></test>
+        <true-case>
+          <block line="516" col="34" end-line="518" end-col="4" comment="">
+            <assignment-expr op="="><lvalue><var-set name="danceSequenceNum"/></lvalue><unary-expr op="-"><literal-number kind="integer" value="1"/></unary-expr></assignment-expr>
+          </block>
+        </true-case>
+      </if>
+      <send message="repaint">
+        <arguments/>
+      </send>
+      <send message="consume">
+        <target><var-ref name="e" idref="Hangman:frm-328"/></target>
+        <arguments/>
+      </send>
+    </block>
+  </method>
+  <method name="keyTyped" visibility="public" id="Hangman:mth-339" line="524" col="2" end-line="525" end-col="2" comment="">
+    <type name="void" primitive="true"/>
+    <formal-arguments>
+      <formal-argument name="e" id="Hangman:frm-337"><type name="java.awt.event.KeyEvent"/></formal-argument>
+    </formal-arguments>
+    <block line="524" col="35" end-line="525" end-col="2" comment="">
+    </block>
+  </method>
+  <method name="mouseClicked" visibility="public" id="Hangman:mth-348" line="528" col="2" end-line="529" end-col="2" comment="/* mouse tracking methods */">
+    <type name="void" primitive="true"/>
+    <formal-arguments>
+      <formal-argument name="e" id="Hangman:frm-346"><type name="java.awt.event.MouseEvent"/></formal-argument>
+    </formal-arguments>
+    <block line="528" col="41" end-line="529" end-col="2" comment="">
+    </block>
+  </method>
+  <method name="mouseReleased" visibility="public" id="Hangman:mth-357" line="531" col="2" end-line="532" end-col="2" comment="">
+    <type name="void" primitive="true"/>
+    <formal-arguments>
+      <formal-argument name="e" id="Hangman:frm-355"><type name="java.awt.event.MouseEvent"/></formal-argument>
+    </formal-arguments>
+    <block line="531" col="42" end-line="532" end-col="2" comment="">
+    </block>
+  </method>
+  <method name="mousePressed" visibility="public" id="Hangman:mth-366" line="537" col="2" end-line="550" end-col="2" comment="/**
+   * Grab the focus and restart the game.
+   */">
+    <type name="void" primitive="true"/>
+    <formal-arguments>
+      <formal-argument name="e" id="Hangman:frm-364"><type name="java.awt.event.MouseEvent"/></formal-argument>
+    </formal-arguments>
+    <block line="537" col="41" end-line="550" end-col="2" comment="">
+      <local-variable name="i" id="Hangman:var-1624"><type name="int" primitive="true"/></local-variable>
+      <send message="requestFocus">
+        <arguments/>
+      </send>
+      <if><test><binary-expr op="&amp;&amp;"><binary-expr op="&gt;"><var-ref name="secretWordLen"/><literal-number kind="integer" value="0"/></binary-expr><paren><binary-expr op="||"><binary-expr op="=="><var-ref name="secretWordLen"/><var-ref name="wordLen"/></binary-expr><binary-expr op="=="><var-ref name="wrongLettersCount"/><var-ref name="maxTries"/></binary-expr></binary-expr></paren></binary-expr></test>
+        <true-case>
+          <block line="544" col="69" end-line="546" end-col="4" comment="// grab focus to get keyDown events">
+            <send message="newGame">
+              <arguments/>
+            </send>
+          </block>
+        </true-case>
+        <false-case>
+          <block line="546" col="11" end-line="548" end-col="4" comment="/*
+ * @(#)Hangman.java1.5  03 Apr 1996 10:56:25
+ *
+ * Copyright (c) 1994-1996 Sun Microsystems, Inc. All Rights Reserved.
+ *
+ * Permission to use, copy, modify, and distribute this software
+ * and its documentation for NON-COMMERCIAL or COMMERCIAL purposes and
+ * without fee is hereby granted. 
+ * Please refer to the file http://java.sun.com/copy_trademarks.html
+ * for further important copyright and trademark information and to
+ * http://java.sun.com/licensing.html for further important licensing
+ * information for the Java (tm) Technology.
+ * 
+ * SUN MAKES NO REPRESENTATIONS OR WARRANTIES ABOUT THE SUITABILITY OF
+ * THE SOFTWARE, EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED
+ * TO THE IMPLIED WARRANTIES OF MERCHANTABILITY, FITNESS FOR A
+ * PARTICULAR PURPOSE, OR NON-INFRINGEMENT. SUN SHALL NOT BE LIABLE FOR
+ * ANY DAMAGES SUFFERED BY LICENSEE AS A RESULT OF USING, MODIFYING OR
+ * DISTRIBUTING THIS SOFTWARE OR ITS DERIVATIVES.
+ * 
+ * THIS SOFTWARE IS NOT DESIGNED OR INTENDED FOR USE OR RESALE AS ON-LINE
+ * CONTROL EQUIPMENT IN HAZARDOUS ENVIRONMENTS REQUIRING FAIL-SAFE
+ * PERFORMANCE, SUCH AS IN THE OPERATION OF NUCLEAR FACILITIES, AIRCRAFT
+ * NAVIGATION OR COMMUNICATION SYSTEMS, AIR TRAFFIC CONTROL, DIRECT LIFE
+ * SUPPORT MACHINES, OR WEAPONS SYSTEMS, IN WHICH THE FAILURE OF THE
+ * SOFTWARE COULD LEAD DIRECTLY TO DEATH, PERSONAL INJURY, OR SEVERE
+ * PHYSICAL OR ENVIRONMENTAL DAMAGE (&quot;HIGH RISK ACTIVITIES&quot;).  SUN
+ * SPECIFICALLY DISCLAIMS ANY EXPRESS OR IMPLIED WARRANTY OF FITNESS FOR
+ * HIGH RISK ACTIVITIES.
+ *
+ * @author Patrick Chan
+ * modified to use MediaTracker by
+ * @author Herb Jellinek
+ * modified for 1.1 by
+ * @author Chris Bucchere
+ *
+ *//* This is the maximum number of incorrect guesses. *//* This is the maximum length of a secret word. *//* This buffer holds the letters in the secret word. *//* This is the length of the secret word. *//* This buffer holds the letters which the user typed
+     but don't appear in the secret word. *//* This is the current number of incorrect guesses. *//* This buffer holds letters that the user has successfully
+     guessed. *//* Number of correct letters in 'word'. *//* This is the font used to paint correctly guessed letters. *//* This is the MediaTracker that looks after loading the images. *//* These are the various classes of images we load *//* This is the sequence of images for Duke hanging on the gallows. */// Dancing Duke related variables/* This thread makes Duke dance. *//* These are the images that make up the dance animation. *//* This is the maximum width and height of all the dance images. *//* This variable holds the number of valid images in danceImages. *//* These offsets refer to the dance images.  The dance images
+     are not of the same size so we need to add these offset 
+     in order to make the images &quot;line&quot; up. *//* This represents the sequence to display the dance images
+     in order to make Duke &quot;dance&quot;.  *//* This is the current sequence number.  -1 implies
+     that Duke hasn't begun to dance. *//* This variable is used to adjust Duke's x-position while
+     he's dancing. *//* This variable specifies the currently x-direction of
+     Duke's dance.  1=&gt;right and -1=&gt;left. *//* This is the stream for the dance music. *//**
+   * Initialize the applet. Resize and load images.
+   */// create tracker// load in dance animation// load in hangman image sequnce// initialize the word buffers./**
+   * Paint the screen.
+   */// draw gallows pole// draw gallows rope// draw gallows base// draw list of wrong letters// draw underlines for secret word// draw known letters in secret word// draw Duke on gallows// first, clear Duke's current image// update dance position//danceDirection = -(int)Math.floor(Math.random() * 12) - 5;// update dance sequence// now paint Duke's new image/**
+   * Starts a new game.  Chooses a new secret word
+   * and clears all the buffers
+   */// stop animation thread.// pick secret word// clear word buffers/**
+   * Start the applet.
+   */// Start a new game only if user has won or lost; otherwise// retain the same game./**
+   * Stop the applet.  Stop the danceThread.
+   *//**
+   * Run Duke's dancing animation. This method is called by class Thread.
+   * @see java.lang.Thread
+   */// start the dancing music.// increment the sequence count and invoke the paint method.// The dance is done so stop the music./**
+   * Starts Duke's dancing animation.
+   */// Added by Kevin A. Smith 10/25/95/* This is the hangman's limited word list. *//* key tracking methods */// start new game if user has already won or lost.// check if valid letter// check if already in secret word// check if already in wrongLetters// is letter in secret word? If so, add it.// wrong letter; add to wrongLetters// show the answer/* mouse tracking methods *//**
+   * Grab the focus and restart the game.
+   */// grab focus to get keyDown events">
+            <send message="play">
+              <arguments><send message="getDocumentBase">
+                  <arguments/>
+                </send>
+                <literal-string value="audio/beep.au"/></arguments>
+            </send>
+          </block>
+        </false-case>
+      </if>
+      <send message="consume">
+        <target><var-ref name="e" idref="Hangman:frm-364"/></target>
+        <arguments/>
+      </send>
+    </block>
+  </method>
+  <method name="mouseEntered" visibility="public" id="Hangman:mth-375" line="552" col="2" end-line="553" end-col="2" comment="/*
+ * @(#)Hangman.java1.5  03 Apr 1996 10:56:25
+ *
+ * Copyright (c) 1994-1996 Sun Microsystems, Inc. All Rights Reserved.
+ *
+ * Permission to use, copy, modify, and distribute this software
+ * and its documentation for NON-COMMERCIAL or COMMERCIAL purposes and
+ * without fee is hereby granted. 
+ * Please refer to the file http://java.sun.com/copy_trademarks.html
+ * for further important copyright and trademark information and to
+ * http://java.sun.com/licensing.html for further important licensing
+ * information for the Java (tm) Technology.
+ * 
+ * SUN MAKES NO REPRESENTATIONS OR WARRANTIES ABOUT THE SUITABILITY OF
+ * THE SOFTWARE, EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED
+ * TO THE IMPLIED WARRANTIES OF MERCHANTABILITY, FITNESS FOR A
+ * PARTICULAR PURPOSE, OR NON-INFRINGEMENT. SUN SHALL NOT BE LIABLE FOR
+ * ANY DAMAGES SUFFERED BY LICENSEE AS A RESULT OF USING, MODIFYING OR
+ * DISTRIBUTING THIS SOFTWARE OR ITS DERIVATIVES.
+ * 
+ * THIS SOFTWARE IS NOT DESIGNED OR INTENDED FOR USE OR RESALE AS ON-LINE
+ * CONTROL EQUIPMENT IN HAZARDOUS ENVIRONMENTS REQUIRING FAIL-SAFE
+ * PERFORMANCE, SUCH AS IN THE OPERATION OF NUCLEAR FACILITIES, AIRCRAFT
+ * NAVIGATION OR COMMUNICATION SYSTEMS, AIR TRAFFIC CONTROL, DIRECT LIFE
+ * SUPPORT MACHINES, OR WEAPONS SYSTEMS, IN WHICH THE FAILURE OF THE
+ * SOFTWARE COULD LEAD DIRECTLY TO DEATH, PERSONAL INJURY, OR SEVERE
+ * PHYSICAL OR ENVIRONMENTAL DAMAGE (&quot;HIGH RISK ACTIVITIES&quot;).  SUN
+ * SPECIFICALLY DISCLAIMS ANY EXPRESS OR IMPLIED WARRANTY OF FITNESS FOR
+ * HIGH RISK ACTIVITIES.
+ *
+ * @author Patrick Chan
+ * modified to use MediaTracker by
+ * @author Herb Jellinek
+ * modified for 1.1 by
+ * @author Chris Bucchere
+ *
+ *//* This is the maximum number of incorrect guesses. *//* This is the maximum length of a secret word. *//* This buffer holds the letters in the secret word. *//* This is the length of the secret word. *//* This buffer holds the letters which the user typed
+     but don't appear in the secret word. *//* This is the current number of incorrect guesses. *//* This buffer holds letters that the user has successfully
+     guessed. *//* Number of correct letters in 'word'. *//* This is the font used to paint correctly guessed letters. *//* This is the MediaTracker that looks after loading the images. *//* These are the various classes of images we load *//* This is the sequence of images for Duke hanging on the gallows. */// Dancing Duke related variables/* This thread makes Duke dance. *//* These are the images that make up the dance animation. *//* This is the maximum width and height of all the dance images. *//* This variable holds the number of valid images in danceImages. *//* These offsets refer to the dance images.  The dance images
+     are not of the same size so we need to add these offset 
+     in order to make the images &quot;line&quot; up. *//* This represents the sequence to display the dance images
+     in order to make Duke &quot;dance&quot;.  *//* This is the current sequence number.  -1 implies
+     that Duke hasn't begun to dance. *//* This variable is used to adjust Duke's x-position while
+     he's dancing. *//* This variable specifies the currently x-direction of
+     Duke's dance.  1=&gt;right and -1=&gt;left. *//* This is the stream for the dance music. *//**
+   * Initialize the applet. Resize and load images.
+   */// create tracker// load in dance animation// load in hangman image sequnce// initialize the word buffers./**
+   * Paint the screen.
+   */// draw gallows pole// draw gallows rope// draw gallows base// draw list of wrong letters// draw underlines for secret word// draw known letters in secret word// draw Duke on gallows// first, clear Duke's current image// update dance position//danceDirection = -(int)Math.floor(Math.random() * 12) - 5;// update dance sequence// now paint Duke's new image/**
+   * Starts a new game.  Chooses a new secret word
+   * and clears all the buffers
+   */// stop animation thread.// pick secret word// clear word buffers/**
+   * Start the applet.
+   */// Start a new game only if user has won or lost; otherwise// retain the same game./**
+   * Stop the applet.  Stop the danceThread.
+   *//**
+   * Run Duke's dancing animation. This method is called by class Thread.
+   * @see java.lang.Thread
+   */// start the dancing music.// increment the sequence count and invoke the paint method.// The dance is done so stop the music./**
+   * Starts Duke's dancing animation.
+   */// Added by Kevin A. Smith 10/25/95/* This is the hangman's limited word list. *//* key tracking methods */// start new game if user has already won or lost.// check if valid letter// check if already in secret word// check if already in wrongLetters// is letter in secret word? If so, add it.// wrong letter; add to wrongLetters// show the answer/* mouse tracking methods *//**
+   * Grab the focus and restart the game.
+   */// grab focus to get keyDown events">
+    <type name="void" primitive="true"/>
+    <formal-arguments>
+      <formal-argument name="e" id="Hangman:frm-373"><type name="java.awt.event.MouseEvent"/></formal-argument>
+    </formal-arguments>
+    <block line="552" col="41" end-line="553" end-col="2" comment="/*
+ * @(#)Hangman.java1.5  03 Apr 1996 10:56:25
+ *
+ * Copyright (c) 1994-1996 Sun Microsystems, Inc. All Rights Reserved.
+ *
+ * Permission to use, copy, modify, and distribute this software
+ * and its documentation for NON-COMMERCIAL or COMMERCIAL purposes and
+ * without fee is hereby granted. 
+ * Please refer to the file http://java.sun.com/copy_trademarks.html
+ * for further important copyright and trademark information and to
+ * http://java.sun.com/licensing.html for further important licensing
+ * information for the Java (tm) Technology.
+ * 
+ * SUN MAKES NO REPRESENTATIONS OR WARRANTIES ABOUT THE SUITABILITY OF
+ * THE SOFTWARE, EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED
+ * TO THE IMPLIED WARRANTIES OF MERCHANTABILITY, FITNESS FOR A
+ * PARTICULAR PURPOSE, OR NON-INFRINGEMENT. SUN SHALL NOT BE LIABLE FOR
+ * ANY DAMAGES SUFFERED BY LICENSEE AS A RESULT OF USING, MODIFYING OR
+ * DISTRIBUTING THIS SOFTWARE OR ITS DERIVATIVES.
+ * 
+ * THIS SOFTWARE IS NOT DESIGNED OR INTENDED FOR USE OR RESALE AS ON-LINE
+ * CONTROL EQUIPMENT IN HAZARDOUS ENVIRONMENTS REQUIRING FAIL-SAFE
+ * PERFORMANCE, SUCH AS IN THE OPERATION OF NUCLEAR FACILITIES, AIRCRAFT
+ * NAVIGATION OR COMMUNICATION SYSTEMS, AIR TRAFFIC CONTROL, DIRECT LIFE
+ * SUPPORT MACHINES, OR WEAPONS SYSTEMS, IN WHICH THE FAILURE OF THE
+ * SOFTWARE COULD LEAD DIRECTLY TO DEATH, PERSONAL INJURY, OR SEVERE
+ * PHYSICAL OR ENVIRONMENTAL DAMAGE (&quot;HIGH RISK ACTIVITIES&quot;).  SUN
+ * SPECIFICALLY DISCLAIMS ANY EXPRESS OR IMPLIED WARRANTY OF FITNESS FOR
+ * HIGH RISK ACTIVITIES.
+ *
+ * @author Patrick Chan
+ * modified to use MediaTracker by
+ * @author Herb Jellinek
+ * modified for 1.1 by
+ * @author Chris Bucchere
+ *
+ *//* This is the maximum number of incorrect guesses. *//* This is the maximum length of a secret word. *//* This buffer holds the letters in the secret word. *//* This is the length of the secret word. *//* This buffer holds the letters which the user typed
+     but don't appear in the secret word. *//* This is the current number of incorrect guesses. *//* This buffer holds letters that the user has successfully
+     guessed. *//* Number of correct letters in 'word'. *//* This is the font used to paint correctly guessed letters. *//* This is the MediaTracker that looks after loading the images. *//* These are the various classes of images we load *//* This is the sequence of images for Duke hanging on the gallows. */// Dancing Duke related variables/* This thread makes Duke dance. *//* These are the images that make up the dance animation. *//* This is the maximum width and height of all the dance images. *//* This variable holds the number of valid images in danceImages. *//* These offsets refer to the dance images.  The dance images
+     are not of the same size so we need to add these offset 
+     in order to make the images &quot;line&quot; up. *//* This represents the sequence to display the dance images
+     in order to make Duke &quot;dance&quot;.  *//* This is the current sequence number.  -1 implies
+     that Duke hasn't begun to dance. *//* This variable is used to adjust Duke's x-position while
+     he's dancing. *//* This variable specifies the currently x-direction of
+     Duke's dance.  1=&gt;right and -1=&gt;left. *//* This is the stream for the dance music. *//**
+   * Initialize the applet. Resize and load images.
+   */// create tracker// load in dance animation// load in hangman image sequnce// initialize the word buffers./**
+   * Paint the screen.
+   */// draw gallows pole// draw gallows rope// draw gallows base// draw list of wrong letters// draw underlines for secret word// draw known letters in secret word// draw Duke on gallows// first, clear Duke's current image// update dance position//danceDirection = -(int)Math.floor(Math.random() * 12) - 5;// update dance sequence// now paint Duke's new image/**
+   * Starts a new game.  Chooses a new secret word
+   * and clears all the buffers
+   */// stop animation thread.// pick secret word// clear word buffers/**
+   * Start the applet.
+   */// Start a new game only if user has won or lost; otherwise// retain the same game./**
+   * Stop the applet.  Stop the danceThread.
+   *//**
+   * Run Duke's dancing animation. This method is called by class Thread.
+   * @see java.lang.Thread
+   */// start the dancing music.// increment the sequence count and invoke the paint method.// The dance is done so stop the music./**
+   * Starts Duke's dancing animation.
+   */// Added by Kevin A. Smith 10/25/95/* This is the hangman's limited word list. *//* key tracking methods */// start new game if user has already won or lost.// check if valid letter// check if already in secret word// check if already in wrongLetters// is letter in secret word? If so, add it.// wrong letter; add to wrongLetters// show the answer/* mouse tracking methods *//**
+   * Grab the focus and restart the game.
+   */// grab focus to get keyDown events">
+    </block>
+  </method>
+  <method name="mouseExited" visibility="public" id="Hangman:mth-384" line="555" col="2" end-line="556" end-col="2" comment="/*
+ * @(#)Hangman.java1.5  03 Apr 1996 10:56:25
+ *
+ * Copyright (c) 1994-1996 Sun Microsystems, Inc. All Rights Reserved.
+ *
+ * Permission to use, copy, modify, and distribute this software
+ * and its documentation for NON-COMMERCIAL or COMMERCIAL purposes and
+ * without fee is hereby granted. 
+ * Please refer to the file http://java.sun.com/copy_trademarks.html
+ * for further important copyright and trademark information and to
+ * http://java.sun.com/licensing.html for further important licensing
+ * information for the Java (tm) Technology.
+ * 
+ * SUN MAKES NO REPRESENTATIONS OR WARRANTIES ABOUT THE SUITABILITY OF
+ * THE SOFTWARE, EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED
+ * TO THE IMPLIED WARRANTIES OF MERCHANTABILITY, FITNESS FOR A
+ * PARTICULAR PURPOSE, OR NON-INFRINGEMENT. SUN SHALL NOT BE LIABLE FOR
+ * ANY DAMAGES SUFFERED BY LICENSEE AS A RESULT OF USING, MODIFYING OR
+ * DISTRIBUTING THIS SOFTWARE OR ITS DERIVATIVES.
+ * 
+ * THIS SOFTWARE IS NOT DESIGNED OR INTENDED FOR USE OR RESALE AS ON-LINE
+ * CONTROL EQUIPMENT IN HAZARDOUS ENVIRONMENTS REQUIRING FAIL-SAFE
+ * PERFORMANCE, SUCH AS IN THE OPERATION OF NUCLEAR FACILITIES, AIRCRAFT
+ * NAVIGATION OR COMMUNICATION SYSTEMS, AIR TRAFFIC CONTROL, DIRECT LIFE
+ * SUPPORT MACHINES, OR WEAPONS SYSTEMS, IN WHICH THE FAILURE OF THE
+ * SOFTWARE COULD LEAD DIRECTLY TO DEATH, PERSONAL INJURY, OR SEVERE
+ * PHYSICAL OR ENVIRONMENTAL DAMAGE (&quot;HIGH RISK ACTIVITIES&quot;).  SUN
+ * SPECIFICALLY DISCLAIMS ANY EXPRESS OR IMPLIED WARRANTY OF FITNESS FOR
+ * HIGH RISK ACTIVITIES.
+ *
+ * @author Patrick Chan
+ * modified to use MediaTracker by
+ * @author Herb Jellinek
+ * modified for 1.1 by
+ * @author Chris Bucchere
+ *
+ *//* This is the maximum number of incorrect guesses. *//* This is the maximum length of a secret word. *//* This buffer holds the letters in the secret word. *//* This is the length of the secret word. *//* This buffer holds the letters which the user typed
+     but don't appear in the secret word. *//* This is the current number of incorrect guesses. *//* This buffer holds letters that the user has successfully
+     guessed. *//* Number of correct letters in 'word'. *//* This is the font used to paint correctly guessed letters. *//* This is the MediaTracker that looks after loading the images. *//* These are the various classes of images we load *//* This is the sequence of images for Duke hanging on the gallows. */// Dancing Duke related variables/* This thread makes Duke dance. *//* These are the images that make up the dance animation. *//* This is the maximum width and height of all the dance images. *//* This variable holds the number of valid images in danceImages. *//* These offsets refer to the dance images.  The dance images
+     are not of the same size so we need to add these offset 
+     in order to make the images &quot;line&quot; up. *//* This represents the sequence to display the dance images
+     in order to make Duke &quot;dance&quot;.  *//* This is the current sequence number.  -1 implies
+     that Duke hasn't begun to dance. *//* This variable is used to adjust Duke's x-position while
+     he's dancing. *//* This variable specifies the currently x-direction of
+     Duke's dance.  1=&gt;right and -1=&gt;left. *//* This is the stream for the dance music. *//**
+   * Initialize the applet. Resize and load images.
+   */// create tracker// load in dance animation// load in hangman image sequnce// initialize the word buffers./**
+   * Paint the screen.
+   */// draw gallows pole// draw gallows rope// draw gallows base// draw list of wrong letters// draw underlines for secret word// draw known letters in secret word// draw Duke on gallows// first, clear Duke's current image// update dance position//danceDirection = -(int)Math.floor(Math.random() * 12) - 5;// update dance sequence// now paint Duke's new image/**
+   * Starts a new game.  Chooses a new secret word
+   * and clears all the buffers
+   */// stop animation thread.// pick secret word// clear word buffers/**
+   * Start the applet.
+   */// Start a new game only if user has won or lost; otherwise// retain the same game./**
+   * Stop the applet.  Stop the danceThread.
+   *//**
+   * Run Duke's dancing animation. This method is called by class Thread.
+   * @see java.lang.Thread
+   */// start the dancing music.// increment the sequence count and invoke the paint method.// The dance is done so stop the music./**
+   * Starts Duke's dancing animation.
+   */// Added by Kevin A. Smith 10/25/95/* This is the hangman's limited word list. *//* key tracking methods */// start new game if user has already won or lost.// check if valid letter// check if already in secret word// check if already in wrongLetters// is letter in secret word? If so, add it.// wrong letter; add to wrongLetters// show the answer/* mouse tracking methods *//**
+   * Grab the focus and restart the game.
+   */// grab focus to get keyDown events">
+    <type name="void" primitive="true"/>
+    <formal-arguments>
+      <formal-argument name="e" id="Hangman:frm-382"><type name="java.awt.event.MouseEvent"/></formal-argument>
+    </formal-arguments>
+    <block line="555" col="40" end-line="556" end-col="2" comment="/*
+ * @(#)Hangman.java1.5  03 Apr 1996 10:56:25
+ *
+ * Copyright (c) 1994-1996 Sun Microsystems, Inc. All Rights Reserved.
+ *
+ * Permission to use, copy, modify, and distribute this software
+ * and its documentation for NON-COMMERCIAL or COMMERCIAL purposes and
+ * without fee is hereby granted. 
+ * Please refer to the file http://java.sun.com/copy_trademarks.html
+ * for further important copyright and trademark information and to
+ * http://java.sun.com/licensing.html for further important licensing
+ * information for the Java (tm) Technology.
+ * 
+ * SUN MAKES NO REPRESENTATIONS OR WARRANTIES ABOUT THE SUITABILITY OF
+ * THE SOFTWARE, EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED
+ * TO THE IMPLIED WARRANTIES OF MERCHANTABILITY, FITNESS FOR A
+ * PARTICULAR PURPOSE, OR NON-INFRINGEMENT. SUN SHALL NOT BE LIABLE FOR
+ * ANY DAMAGES SUFFERED BY LICENSEE AS A RESULT OF USING, MODIFYING OR
+ * DISTRIBUTING THIS SOFTWARE OR ITS DERIVATIVES.
+ * 
+ * THIS SOFTWARE IS NOT DESIGNED OR INTENDED FOR USE OR RESALE AS ON-LINE
+ * CONTROL EQUIPMENT IN HAZARDOUS ENVIRONMENTS REQUIRING FAIL-SAFE
+ * PERFORMANCE, SUCH AS IN THE OPERATION OF NUCLEAR FACILITIES, AIRCRAFT
+ * NAVIGATION OR COMMUNICATION SYSTEMS, AIR TRAFFIC CONTROL, DIRECT LIFE
+ * SUPPORT MACHINES, OR WEAPONS SYSTEMS, IN WHICH THE FAILURE OF THE
+ * SOFTWARE COULD LEAD DIRECTLY TO DEATH, PERSONAL INJURY, OR SEVERE
+ * PHYSICAL OR ENVIRONMENTAL DAMAGE (&quot;HIGH RISK ACTIVITIES&quot;).  SUN
+ * SPECIFICALLY DISCLAIMS ANY EXPRESS OR IMPLIED WARRANTY OF FITNESS FOR
+ * HIGH RISK ACTIVITIES.
+ *
+ * @author Patrick Chan
+ * modified to use MediaTracker by
+ * @author Herb Jellinek
+ * modified for 1.1 by
+ * @author Chris Bucchere
+ *
+ *//* This is the maximum number of incorrect guesses. *//* This is the maximum length of a secret word. *//* This buffer holds the letters in the secret word. *//* This is the length of the secret word. *//* This buffer holds the letters which the user typed
+     but don't appear in the secret word. *//* This is the current number of incorrect guesses. *//* This buffer holds letters that the user has successfully
+     guessed. *//* Number of correct letters in 'word'. *//* This is the font used to paint correctly guessed letters. *//* This is the MediaTracker that looks after loading the images. *//* These are the various classes of images we load *//* This is the sequence of images for Duke hanging on the gallows. */// Dancing Duke related variables/* This thread makes Duke dance. *//* These are the images that make up the dance animation. *//* This is the maximum width and height of all the dance images. *//* This variable holds the number of valid images in danceImages. *//* These offsets refer to the dance images.  The dance images
+     are not of the same size so we need to add these offset 
+     in order to make the images &quot;line&quot; up. *//* This represents the sequence to display the dance images
+     in order to make Duke &quot;dance&quot;.  *//* This is the current sequence number.  -1 implies
+     that Duke hasn't begun to dance. *//* This variable is used to adjust Duke's x-position while
+     he's dancing. *//* This variable specifies the currently x-direction of
+     Duke's dance.  1=&gt;right and -1=&gt;left. *//* This is the stream for the dance music. *//**
+   * Initialize the applet. Resize and load images.
+   */// create tracker// load in dance animation// load in hangman image sequnce// initialize the word buffers./**
+   * Paint the screen.
+   */// draw gallows pole// draw gallows rope// draw gallows base// draw list of wrong letters// draw underlines for secret word// draw known letters in secret word// draw Duke on gallows// first, clear Duke's current image// update dance position//danceDirection = -(int)Math.floor(Math.random() * 12) - 5;// update dance sequence// now paint Duke's new image/**
+   * Starts a new game.  Chooses a new secret word
+   * and clears all the buffers
+   */// stop animation thread.// pick secret word// clear word buffers/**
+   * Start the applet.
+   */// Start a new game only if user has won or lost; otherwise// retain the same game./**
+   * Stop the applet.  Stop the danceThread.
+   *//**
+   * Run Duke's dancing animation. This method is called by class Thread.
+   * @see java.lang.Thread
+   */// start the dancing music.// increment the sequence count and invoke the paint method.// The dance is done so stop the music./**
+   * Starts Duke's dancing animation.
+   */// Added by Kevin A. Smith 10/25/95/* This is the hangman's limited word list. *//* key tracking methods */// start new game if user has already won or lost.// check if valid letter// check if already in secret word// check if already in wrongLetters// is letter in secret word? If so, add it.// wrong letter; add to wrongLetters// show the answer/* mouse tracking methods *//**
+   * Grab the focus and restart the game.
+   */// grab focus to get keyDown events">
+    </block>
+  </method>
+</class>
+</java-class-file>
+</java-source-program>
