@@ -1,0 +1,274 @@
+<java-source-program>
+    <java-class-file name="A.java">
+        <interface name="S" visibility="public">
+            <method id="" name="z" visibility="public">
+                <type name="void" primitive="true"/>
+                <formal-arguments/>
+            </method>
+        </interface>
+        <interface visibility="public" name="A">
+            <extend interface="S"/>
+            <method id="" name="p" visibility="public">
+                <type name="void" primitive="true"/>
+                <formal-arguments>
+                    <formal-argument id="" name="i">
+                        <type primitive="true" name="int"/>
+                    </formal-argument>
+                </formal-arguments>
+            </method>
+            <method id="" name="q" visibility="public">
+                <type name="void" primitive="true"/>
+                <formal-arguments/>
+            </method>
+        </interface>
+        <interface name="B" visibility="public">
+            <method id="" name="b" visibility="public">
+                <type primitive="true" name="int"/>
+                <formal-arguments>
+                    <formal-argument id="" name="i">
+                        <type primitive="true" name="int"/>
+                    </formal-argument>
+                </formal-arguments>
+            </method>
+        </interface>
+        <class name="AC" visibility="public">
+            <implement interface="A"/>
+            <constructor id="" visibility="public" name="AC">
+                <formal-arguments/>
+                <send message="r">
+                    <arguments/>
+                </send>
+            </constructor>
+            <method id="" name="r" visibility="private">
+                <type name="void" primitive="true"/>
+                <formal-arguments/>
+                <block>
+                    <send message="p">
+                        <arguments>
+                            <literal-number kind="integer" value="5"/>
+                        </arguments>
+                    </send>
+                </block>
+            </method>
+            <method id="" name="p" visibility="public">
+                <type name="void" primitive="true"/>
+                <formal-arguments>
+                    <formal-argument id="" name="i">
+                        <type primitive="true" name="int"/>
+                    </formal-argument>
+                </formal-arguments>
+                <block>
+                    <send message="println">
+                        <target>
+                            <field-access field="out">
+                                <var-ref name="java.lang.System"/>
+                            </field-access>
+                        </target>
+                        <arguments>
+                            <binary-expr op="*">
+                                <binary-expr op="*">
+                                    <paren>
+                                        <binary-expr op="+">
+                                            <binary-expr op="+">
+                                                <binary-expr op="+">
+                                                    <literal-number kind="integer" value="1"/>
+                                                    <literal-number kind="integer" value="1"/>
+                                                </binary-expr>
+                                                <literal-number kind="integer" value="1"/>
+                                            </binary-expr>
+                                            <literal-number kind="integer" value="1"/>
+                                        </binary-expr>
+                                    </paren>
+                                    <var-ref name="i"/>
+                                </binary-expr>
+                                <paren>
+                                    <binary-expr op="+">
+                                        <binary-expr op="+">
+                                            <binary-expr op="+">
+                                                <literal-number kind="integer" value="1"/>
+                                                <literal-number kind="integer" value="1"/>
+                                            </binary-expr>
+                                            <literal-number kind="integer" value="1"/>
+                                        </binary-expr>
+                                        <var-ref name="i"/>
+                                    </binary-expr>
+                                </paren>
+                            </binary-expr>
+                        </arguments>
+                    </send>
+                </block>
+            </method>
+            <method id="" name="q" visibility="public">
+                <type name="void" primitive="true"/>
+                <formal-arguments/>
+                <block>
+                    <send message="p">
+                        <arguments>
+                            <literal-number kind="integer" value="5"/>
+                        </arguments>
+                    </send>
+                    <send message="r">
+                        <arguments/>
+                    </send>
+                </block>
+            </method>
+            <method id="" name="z" visibility="public">
+                <type name="void" primitive="true"/>
+                <formal-arguments/>
+                <block>
+                    <send message="q">
+                        <arguments/>
+                    </send>
+                    <send message="q">
+                        <arguments/>
+                    </send>
+                </block>
+            </method>
+            <method id="" name="main" visibility="public" static="true">
+                <type name="void" primitive="true"/>
+                <formal-arguments>
+                    <formal-argument id="" name="args">
+                        <type name="java.lang.String" dimensions="1"/>
+                    </formal-argument>
+                </formal-arguments>
+                <block>
+                    <send message="p">
+                        <target>
+                            <paren>
+                                <new>
+                                    <type name="BC"/>
+                                    <arguments/>
+                                </new>
+                            </paren>
+                        </target>
+                        <arguments>
+                            <literal-number kind="integer" value="3"/>
+                        </arguments>
+                    </send>
+                </block>
+            </method>
+        </class>
+        <class name="BC" visibility="public">
+            <superclass name="AC"/>
+            <implement interface="A"/>
+            <implement interface="B"/>
+            <constructor id="" visibility="public" name="BC">
+                <formal-arguments/>
+                <super-call>
+                    <arguments/>
+                </super-call>
+                <send message="q">
+                    <arguments/>
+                </send>
+            </constructor>
+            <method id="" name="b" visibility="public">
+                <type primitive="true" name="int"/>
+                <formal-arguments>
+                    <formal-argument id="" name="i">
+                        <type primitive="true" name="int"/>
+                    </formal-argument>
+                </formal-arguments>
+                <block>
+                    <return>
+                        <binary-expr op="+">
+                            <var-ref name="i"/>
+                            <paren>
+                                <binary-expr op="+">
+                                    <binary-expr op="-">
+                                        <binary-expr op="/">
+                                            <binary-expr op="*">
+                                                <literal-number kind="integer" value="2"/>
+                                                <literal-number kind="integer" value="3"/>
+                                            </binary-expr>
+                                            <literal-number kind="integer" value="4"/>
+                                        </binary-expr>
+                                        <literal-number kind="integer" value="5"/>
+                                    </binary-expr>
+                                    <literal-number kind="integer" value="6"/>
+                                </binary-expr>
+                            </paren>
+                        </binary-expr>
+                    </return>
+                </block>
+            </method>
+        </class>
+    </java-class-file>
+    <java-class-file name="X.java">
+        <interface visibility="public" name="X">
+            <method id="" name="t" visibility="public">
+                <type primitive="true" name="int"/>
+                <formal-arguments>
+                    <formal-argument id="" name="o">
+                        <type name="java.lang.Object"/>
+                    </formal-argument>
+                </formal-arguments>
+                <throws exception="java.lang.Exception"/>
+            </method>
+        </interface>
+        <class name="XC" visibility="public">
+            <implement interface="X"/>
+            <constructor id="" visibility="public" name="XC">
+                <formal-arguments/>
+                <try>
+                    <block>
+                        <send message="t">
+                            <arguments>
+                                <new>
+                                    <type name="XC"/>
+                                    <arguments/>
+                                </new>
+                            </arguments>
+                        </send>
+                    </block>
+                    <catch>
+                        <formal-argument id="" name="e">
+                            <type name="java.lang.Exception"/>
+                        </formal-argument>
+                        <block/>
+                    </catch>
+                </try>
+            </constructor>
+            <method id="" name="t" visibility="public">
+                <type primitive="true" name="int"/>
+                <formal-arguments>
+                    <formal-argument id="" name="o">
+                        <type name="java.lang.Object"/>
+                    </formal-argument>
+                </formal-arguments>
+                <throws exception="java.lang.Exception"/>
+                <block>
+                    <if>
+                        <test>
+                            <instanceof-test>
+                                <var-ref name="o"/>
+                                <type name="B"/>
+                            </instanceof-test>
+                        </test>
+                        <true-case>
+                            <return>
+                                <send message="b">
+                                    <target>
+                                        <paren>
+                                            <cast-expr>
+                                                <type name="B"/>
+                                                <var-ref name="o"/>
+                                            </cast-expr>
+                                        </paren>
+                                    </target>
+                                    <arguments>
+                                        <literal-number kind="integer" value="1"/>
+                                    </arguments>
+                                </send>
+                            </return>
+                        </true-case>
+                        <false-case>
+                            <return>
+                                <literal-number kind="integer" value="0"/>
+                            </return>
+                        </false-case>
+                    </if>
+                </block>
+            </method>
+        </class>
+    </java-class-file>
+</java-source-program>
