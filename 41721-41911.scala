@@ -4,11 +4,11 @@ object Proj02 {
     
     val x = scala.xml.XML.loadFile(input);
 
-    val filesN = (x \ "java-class-file").size;
+    val files = (x \ "java-class-file");
 
 
 
-    val html = <html><h2>{filesN} ficheiro(s)</h2></html>;
+    val html = <html><h2>{files.size} ficheiro(s)</h2></html>;
     scala.xml.XML.save(output, html);
   }
 
