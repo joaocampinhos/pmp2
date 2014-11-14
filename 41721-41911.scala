@@ -101,6 +101,6 @@ object Proj02 {
     
     def main(args: Array[String]) {
       
-      probA(args(0), args(1));
+      probA(args(0), args(0).dropRight(9) + ".stats.html");
   }
 }
