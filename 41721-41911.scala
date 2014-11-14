@@ -65,18 +65,14 @@ object Proj02 {
     	}
     }*/
 
-    /*{fileList.map(i => <h3>ficheiro {i.getName()}</h3>
-    	<h3>interface {i.getClasses()}</h3>
-    )}*/
-
 	var htmlFiles = new xml.NodeBuffer;
 	for(file <- fileList){
-    	htmlFiles = htmlFiles &+ <h3>ficheiro {file.getName()}</h3>;
+    	htmlFiles &+ <h3>ficheiro {file.getName()}</h3>;
     	for(interface <- file.getInterfaces()){
-    		htmlFiles = htmlFiles &+ <h3>interface {interface}</h3>;
+    		htmlFiles &+ <h3>interface {interface}</h3>;
     	}
     	for(clace <- file.getClasses()){
-    		htmlFiles = htmlFiles &+ <h3>class {clace}</h3>;
+    		htmlFiles &+ <h3>class {clace}</h3>;
     	}
     }
 
