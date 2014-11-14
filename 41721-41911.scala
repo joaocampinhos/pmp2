@@ -66,28 +66,14 @@ object Proj02 {
     }*/
 
 
-    
-
-    //tentativa de fazer update ao html com o que está guardado nas listas
-    /*def addFile(files: scala.xml.NodeSeq, name: String) = {
-    files match {
-        case <files>{ l @ _* }</files> =>
-            <files>
-                 { l }
-                 <h3>{name}</h3>
-            </files>
-   }
-}*/
-
-
 
     var html = <html>
-    	<h3>{files} ficheiro(s)</h3>
-    	<h3>{interfaces} interface(s)</h3>
-    	<h3>{classes} classe(s)</h3>
-    	<files>
-    	</files>
-    </html>;
+    		<h3>{files} ficheiro(s)</h3>
+    		<h3>{interfaces} interface(s)</h3>
+    		<h3>{classes} classe(s)</h3>
+    		{fileList.map(i => <h3>ficheiro {i.getName()}</h3>)}
+    	</html>;
+
 
     scala.xml.XML.save(output, html);
   }
