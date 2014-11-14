@@ -9,17 +9,37 @@ object Proj02 {
     var classes = 0;
 
 
+    class Interface(name: String){
+    	var nome = name;
+    	var superIF = List[String]();
+
+    	def addSuperIF(name: String): Unit ={
+    		superIF = name :: superIF;
+    	}
+
+    	def getName(): String ={
+    		return nome;
+    	}
+
+    	def getSuperIFs(): List[String] ={
+    		return superIF;
+    	}
+    }
+
+
     class File(name: String){
     	var nome = name;
     	var classList = List[String]();
-    	var interfaceList = List[String]();
+    	var interfaceList = List[Interface]();
 
     	def addClass(name: String): Unit = {
     		classList = name :: classList;
     	}
 
-    	def addInterface(name: String): Unit = {
-    		interfaceList = name :: interfaceList;
+    	def addInterface(name: String): Interface = {
+    		var tempIF = new Interface(name);
+    		interfaceList = tempIF :: interfaceList;
+    		return tempIF;
     	}
 
     	def getName(): String = {
@@ -30,7 +50,7 @@ object Proj02 {
     		return classList;
     	}
 
-    	def getInterfaces(): List[String] = {
+    	def getInterfaces(): List[Interface] = {
     		return interfaceList;
     	}
     }
@@ -41,38 +61,37 @@ object Proj02 {
     //isto conta o numero de ficheiros, classes e interfasses e guarda na lista
     var program = x \\ "java-source-program";
     for(file <- program \ "java-class-file"){
+    	var tempFile = new File((file \ "@name").text);
     	files = files + 1;
-    	fileList = (new File((file \ "@name").text)) :: fileList;
+    	fileList = tempFile :: fileList;
     	for(interface <- file \ "interface"){
     		interfaces = interfaces + 1;
-    		fileList(files-1).addInterface((interface \ "@name").text);
+    		var tempIF = tempFile.addInterface((interface \ "@name").text);
+    		for(sif <- interface \ "extend"){
+    			tempIF.addSuperIF((sif \ "@interface").text);
+    		}
+
     	}
     	for(clace <- file \ "class"){
     		classes = classes + 1;
-    		fileList(files-1).addClass((clace \ "@name").text);
+    		tempFile.addClass((clace \ "@name").text);
     	}
     }
 
-
-    //testar se ta a guardar bem
-    /*for(file <- fileList){
-    	println(file.getName() + "::");
-    	for(interface <- file.getInterfaces()){
-    		println(interface);
-    	}
-    	for(clace <- file.getClasses()){
-    		println(clace);
-    	}
-    }*/
+    //println(fileList(1).getName());
+    //println(fileList(1).getInterfaces()(1).getSuperIFs()(0));
 
 	var htmlFiles = new xml.NodeBuffer;
 	for(file <- fileList){
     	htmlFiles &+ <h3>ficheiro {file.getName()}</h3>;
     	for(interface <- file.getInterfaces()){
-    		htmlFiles &+ <h3>interface {interface}</h3>;
+    		htmlFiles &+ <p>interface {interface.getName()}</p>;
+    		for(sif <- interface.getSuperIFs()){
+    			htmlFiles &+ <p>super: {sif}</p>; 
+    		}
     	}
     	for(clace <- file.getClasses()){
-    		htmlFiles &+ <h3>class {clace}</h3>;
+    		htmlFiles &+ <p>class {clace}</p>;
     	}
     }
 
