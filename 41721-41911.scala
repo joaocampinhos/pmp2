@@ -19,24 +19,29 @@ object Proj02 {
           cName = (a \ "@name").text
           <class>{ sub(el) }</class> //Tamos a perder cenas importantes!
         case a @ <method>{ el @ _* }</method> if (a \ "@name").text == "main" =>
-          addList(a);
+          <method>{ addList(a) }</method>
         case a @ <method>{ el @ _* }</method> =>
           var fullname = cName+"."+(a \ "@name").text
-          println(fullname)
           addCount(a, fullname);
         case other @ _ => other
       }
     }
 
     def addCount( seq: Seq[xml.Node], name: String) : xml.Node = {
-      <send message="count">
-        <target>
-          CentralCounting
-        </target>
-        <arguments>
-          String -> {name}
-        </arguments>
-      </send>
+      seq match {
+        case <block>{ el @ _* }</block> => <block>
+                                             {el}
+                                             <send message="count">
+                                               <target>
+                                                 CentralCounting
+                                               </target>
+                                               <arguments>
+                                                 String -> {name}
+                                               </arguments>
+                                             </send>
+                                           </block>
+        case other @ _ => addCount(other, name)
+      }
     }
 
     def addList( seq: Seq[xml.Node]) : xml.Node = {
