@@ -3,6 +3,7 @@ object Proj02 {
   def probB(input: String, output: String): Unit = {
 
     var cName = ""; //Esta solução é um bocado feia não?
+    var mName = "";
 
     def profile( node: xml.Node) : xml.Node = {
 
@@ -19,38 +20,33 @@ object Proj02 {
           cName = (a \ "@name").text
           <class>{ sub(el) }</class> //Tamos a perder cenas importantes!
         case a @ <method>{ el @ _* }</method> if (a \ "@name").text == "main" =>
-          <method>{ addList(a) }</method>
+          <method>{ sub(el) }</method>
         case a @ <method>{ el @ _* }</method> =>
-          var fullname = cName+"."+(a \ "@name").text
-          addCount(a, fullname);
+          mName = (a \ "@name").text
+          <method>{ sub(el) }</method>
+        case <block>{ el @ _* }</block> =>
+          <block>{ addProf()}{ sub(el) }</block>
         case other @ _ => other
       }
     }
 
-    def addCount( seq: Seq[xml.Node], name: String) : xml.Node = {
-      seq match {
-        case <block>{ el @ _* }</block> => <block>
-                                             {el}
-                                             <send message="count">
-                                               <target>
-                                                 CentralCounting
-                                               </target>
-                                               <arguments>
-                                                 String -> {name}
-                                               </arguments>
-                                             </send>
-                                           </block>
-        case other @ _ => addCount(other, name)
-      }
-    }
-
-    def addList( seq: Seq[xml.Node]) : xml.Node = {
-      <send message="list">
-        <target>
-          CentralCounting
-        </target>
-        <arguments/>
-      </send>
+    def addProf() : xml.Node = {
+      if (mName == "")
+        <send message="list">
+          <target>
+            CentralCounting
+          </target>
+          <arguments/>
+        </send>
+      else
+        <send message="count">
+          <target>
+            CentralCounting
+          </target>
+          <arguments>
+            String -> {cName+"."+mName}
+          </arguments>
+        </send>
     }
 
     var x = scala.xml.XML.loadFile(input);
