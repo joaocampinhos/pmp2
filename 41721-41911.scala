@@ -44,7 +44,7 @@ object Proj02 {
             <var-ref name="CentralCounting"/>
           </target>
           <arguments>
-            <literal-string value="{fullName}"/>
+            <literal-string value={fullName}/>
           </arguments>
         </send>
     }
