@@ -12,9 +12,18 @@ object Proj02 {
     class Interface(name: String){
     	var nome = name;
     	var superIF = List[String]();
+    	var mHeaders = List[String]();
+    	var uses = List[String]();
 
     	def addSuperIF(name: String): Unit ={
     		superIF = name :: superIF;
+    	}
+
+    	def addMHeader(header: String): Unit ={
+    		mHeaders = header :: mHeaders;
+    	}
+    	def addUse(name: String): Unit ={
+    		uses = name :: uses;
     	}
 
     	def getName(): String ={
@@ -24,16 +33,70 @@ object Proj02 {
     	def getSuperIFs(): List[String] ={
     		return superIF;
     	}
+
+    	def getMHeaders(): List[String] ={
+    		return mHeaders;
+    	}
+
+    	def getUses(): List[String] ={
+    		return uses;
+    	}
+    }
+
+    class Clace(name: String){
+    	var nome = name;
+    	var superC = List[String]();
+    	var implements = List[String]();
+    	var mHeaders = List[String]();
+    	var uses = List[String]();
+
+    	def addSuperC(name: String): Unit ={
+    		superC = name :: superC;
+    	}
+
+    	def addImplements(name: String): Unit ={
+    		implements = name :: implements;
+    	}
+
+    	def addMHeader(header: String): Unit ={
+    		mHeaders = header :: mHeaders;
+    	}
+
+    	def addUse(name: String): Unit ={
+    		uses = name :: uses;
+    	}
+
+    	def getName(): String ={
+    		return nome;
+    	}
+
+    	def getSuperC(): List[String] ={
+    		return superC;
+    	}
+
+    	def getImplements(): List[String] ={
+    		return implements;
+    	}
+
+    	def getMHeaders(): List[String] ={
+    		return mHeaders;
+    	}
+
+    	def getUses(): List[String] ={
+    		return uses;
+    	}
     }
 
 
     class File(name: String){
     	var nome = name;
-    	var classList = List[String]();
+    	var classList = List[Clace]();
     	var interfaceList = List[Interface]();
 
-    	def addClass(name: String): Unit = {
-    		classList = name :: classList;
+    	def addClass(name: String): Clace = {
+    		var tempC = new Clace(name);
+    		classList = tempC :: classList;
+    		return tempC;
     	}
 
     	def addInterface(name: String): Interface = {
@@ -42,11 +105,11 @@ object Proj02 {
     		return tempIF;
     	}
 
-    	def getName(): String = {
+    	def getName(): String ={
     		return nome;
     	}
 
-    	def getClasses(): List[String] = {
+    	def getClasses(): List[Clace] = {
     		return classList;
     	}
 
@@ -70,36 +133,130 @@ object Proj02 {
     		for(sif <- interface \ "extend"){
     			tempIF.addSuperIF((sif \ "@interface").text);
     		}
+    		for(tipe <- interface \\ "type"){
+    			if((tipe \ "@primitive").text != "true" && ((tipe \ "@name").text).startsWith("java")==false)
+    				if(tempIF.getUses().contains((tipe \ "@name").text) == false)
+    					tempIF.addUse((tipe \ "@name").text);
+    		}
+    		for(method <- interface \ "method"){
+    			var visibility = method \ "@visibility";
+    			var static = method \ "@static";
+    			var finale = method \ "@final";
+    			var sync = method \ "@synchronized"
+    			var tipe = (method \ "type") \ "@name";
+    			var name = method \ "@name";
+    			var arguments = "(";
+    			for(argument <- (method \ "formal-arguments") \ "formal-argument"){
+    				arguments = arguments + ((argument \ "type") \ "@name") +" "+ (argument \ "@name") +"  ";
+    			}
+    			arguments = arguments + ")";
+    			var throws= "";
+    			for(t <- method \ "throws"){
+    				throws = throws + " " + t \ "@exception";
+    			}
+    			var header = visibility.text;
+    			if(static.text == "true")
+    				header = header +" static";
+    			if(finale.text == "true")
+    				header = header + " final";
+    			if(sync.text == "true")
+    				header = header + " synchronized";
+    			header = header +" "+ tipe.text +" "+ name.text + arguments;
+    			if(throws != "")
+    				header = header +" throws"+ throws;
+    			tempIF.addMHeader(header);
+    		}
 
     	}
     	for(clace <- file \ "class"){
     		classes = classes + 1;
-    		tempFile.addClass((clace \ "@name").text);
+    		var tempC = tempFile.addClass((clace \ "@name").text);
+    		for(sc <- clace \ "superclass"){
+    			tempC.addSuperC((sc \ "@name").text);
+    		}
+    		for(ip <- clace \ "implement"){
+    			tempC.addImplements((ip \ "@interface").text);
+    		}
+    		for(tipe <- clace \\ "type"){
+    			if((tipe \ "@primitive").text != "true" && ((tipe \ "@name").text).startsWith("java")==false)
+    				if(tempC.getUses().contains((tipe \ "@name").text) == false)
+    					tempC.addUse((tipe \ "@name").text);
+    		}
+    		for(method <- clace \ "method"){
+    			var visibility = method \ "@visibility";
+    			var static = method \ "@static";
+    			var tipe = (method \ "type") \ "@name";
+    			var name = method \ "@name";
+    			var arguments = "(";
+    			for(argument <- (method \ "formal-arguments") \ "formal-argument"){
+    				arguments = arguments + ((argument \ "type") \ "@name") +" "+ (argument \ "@name") +"  ";
+    			}
+    			arguments = arguments + ")";
+    			var throws= "";
+    			for(t <- method \ "throws"){
+    				throws = throws + " " + t \ "@exception";
+    			}
+    			var header = visibility.text;
+    			if(static.text == "true")
+    				header = header +" static";
+    			header = header +" "+ tipe.text +" "+ name.text + arguments;
+    			if(throws != "")
+    				header = header +" throws"+ throws;
+    			tempC.addMHeader(header);
+    		}
     	}
     }
 
-    //println(fileList(1).getName());
-    //println(fileList(1).getInterfaces()(1).getSuperIFs()(0));
-
 	var htmlFiles = new xml.NodeBuffer;
 	for(file <- fileList){
-    	htmlFiles &+ <h3>ficheiro {file.getName()}</h3>;
+    	htmlFiles &+ <h2>ficheiro {file.getName()}</h2>;
     	for(interface <- file.getInterfaces()){
-    		htmlFiles &+ <p>interface {interface.getName()}</p>;
+    		htmlFiles &+ <h3>Interface {interface.getName()}</h3>;
     		for(sif <- interface.getSuperIFs()){
-    			htmlFiles &+ <p>super: {sif}</p>; 
+    			htmlFiles &+ <p>Super: {sif}</p>; 
     		}
+    		htmlFiles &+ <span>Uses: </span>
+    		for(use <- interface.getUses()){
+    			htmlFiles &+ <span>{use} </span>;
+    		}
+    		htmlFiles &+ <h4>Methods:</h4>;
+    		for(header <- interface.getMHeaders()){
+    			htmlFiles &+ <p>{header}</p>;
+    		}
+    		htmlFiles &+ <div>.....................................................................................................................</div>
     	}
     	for(clace <- file.getClasses()){
-    		htmlFiles &+ <p>class {clace}</p>;
+    		htmlFiles &+ <h3>Class {clace.getName()}</h3>;
+    		if(clace.getSuperC().size == 0)
+    			htmlFiles &+ <p>Super: java.lang.Object</p>;
+    		else
+    			for(sc <- clace.getSuperC()){
+    				htmlFiles &+ <p>Super: {sc}</p>;
+    			}
+    			htmlFiles &+ <span>Implements: </span>;
+    		for(ip <- clace.getImplements()){
+    			htmlFiles &+ <span>{ip} </span>;
+    		}
+
+    		htmlFiles &+ <p> </p><span>Uses: </span>;
+    		for(use <- clace.getUses()){
+    			htmlFiles &+ <span>{use} </span>;
+    		}
+    		htmlFiles &+ <h4>Methods:</h4>;
+    		for(header <- clace.getMHeaders()){
+    			htmlFiles &+ <p>{header}</p>;
+    		}
+    		htmlFiles &+ <div>.....................................................................................................................</div>
     	}
+    	htmlFiles &+ <div>---------------------------------------------------------------------------------------</div>;
     }
 
 
     var html = <html>
-    		<h3>{files} ficheiro(s)</h3>
-    		<h3>{interfaces} interface(s)</h3>
-    		<h3>{classes} classe(s)</h3>
+    		<h1>Stats for {input}</h1>
+    		<p>{files} ficheiro(s)</p>
+    		<p>{interfaces} interface(s)</p>
+    		<p>{classes} classe(s)</p>
     		{htmlFiles}
     	</html>;
 
