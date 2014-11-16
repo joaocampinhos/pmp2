@@ -14,7 +14,8 @@ object Proj02 {
         case <java-source-program>{ el @ _* }</java-source-program> =>
           <java-source-program>{ sub(el) }</java-source-program>
         case a @ <java-class-file>{ el @ _* }</java-class-file> =>
-          <java-class-file>{ sub(el) }</java-class-file> //Continuar com o nome do ficheiro. ficou perdido pelo caminho
+          <java-class-file>{ sub(el) }</java-class-file>
+          //Continuar com o nome do ficheiro. ficou perdido pelo caminho
         case a @ <class>{ el @ _* }</class> =>
           fullName = (a \ "@name").text
           <class>{ sub(el) }</class> //Tamos a perder cenas importantes!
