@@ -2,7 +2,8 @@ object Proj02 {
 
   def probB(input: String, output: String): Unit = {
 
-    var fullName = ""; //Uma solução um bocado feia
+    var cName = "";
+    var mName = "";
     var main = false;
 
     def profile( node: xml.Node) : xml.Node = {
@@ -14,24 +15,42 @@ object Proj02 {
         case <java-source-program>{ el @ _* }</java-source-program> =>
           <java-source-program>{ sub(el) }</java-source-program>
         case a @ <java-class-file>{ el @ _* }</java-class-file> =>
-          <java-class-file>{ sub(el) }</java-class-file>
-          //Continuar com o nome do ficheiro. ficou perdido pelo caminho
+          <java-class-file >{ sub(el) }</java-class-file>
+          /*val _el = <java-class-file >{ sub(el) }</java-class-file>
+          addAttrs(_el, a.attributes.asAttrMap)*/
         case a @ <class>{ el @ _* }</class> =>
-          fullName = (a \ "@name").text
-          <class>{ sub(el) }</class> //Tamos a perder cenas importantes!
+          cName = (a \ "@name").text
+          <class>{ sub(el) }</class>
+          /*val _el = <class>{ sub(el) }</class>
+          addAttrs(_el, a.attributes.asAttrMap)*/
         case a @ <method>{ el @ _* }</method> if (a \ "@name").text == "main" =>
           main = true
-          <method>{ sub(el) }</method> //Mais cenas perdidas :(
-        case a @ <method>{ el @ _* }</method> =>
-          fullName += "." + (a \ "@name").text
           <method>{ sub(el) }</method>
+          /*val _el = <method>{ sub(el) }</method>
+          addAttrs(_el, a.attributes.asAttrMap)*/
+        case a @ <method>{ el @ _* }</method> =>
+          mName = (a \ "@name").text
+          <method>{ sub(el) }</method>
+          /*val _el = <method>{ sub(el) }</method>
+          addAttrs(_el, a.attributes.asAttrMap)*/
         case <block>{ el @ _* }</block> =>
           <block>{ addProf()}{ sub(el) }</block>
         case other @ _ => other
       }
     }
 
+    /* Não está terminado
+    def addAttrs(node: xml.Node, attrs: Map[String,String]) : xml.Node = {
+     attrs match {
+       case x if x.isEmpty => node
+       case x =>
+         val (key, value) = x.head
+         addAttrs(node % Attribute(None, key, value, Null), attrs.tail)
+     }
+    }*/
+
     def addProf() : xml.Node = {
+      var fullName = cName+"."+mName;
       if (main)
         <send message="list">
           <target>
