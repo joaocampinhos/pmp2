@@ -121,7 +121,7 @@ object Proj02 {
     var fileList = List[File]();
 
 
-    //isto conta o numero de ficheiros, classes e interfasses e guarda na lista
+    //bloco que extrai a informação do ficheiro xml e guarda
     var program = x \\ "java-source-program";
     for(file <- program \ "java-class-file"){
     	var tempFile = new File((file \ "@name").text);
@@ -207,6 +207,7 @@ object Proj02 {
     	}
     }
 
+    //bloco para construir o ficheiro html
 	var htmlFiles = new xml.NodeBuffer;
 	for(file <- fileList){
     	htmlFiles &+ <h2>File {file.getName()}</h2>;
