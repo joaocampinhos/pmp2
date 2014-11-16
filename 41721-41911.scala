@@ -209,7 +209,7 @@ object Proj02 {
 
 	var htmlFiles = new xml.NodeBuffer;
 	for(file <- fileList){
-    	htmlFiles &+ <h2>ficheiro {file.getName()}</h2>;
+    	htmlFiles &+ <h2>File {file.getName()}</h2>;
     	for(interface <- file.getInterfaces()){
     		htmlFiles &+ <h3>Interface {interface.getName()}</h3>;
     		for(sif <- interface.getSuperIFs()){
@@ -223,7 +223,7 @@ object Proj02 {
     		for(header <- interface.getMHeaders()){
     			htmlFiles &+ <p>{header}</p>;
     		}
-    		htmlFiles &+ <div>.....................................................................................................................</div>
+    		htmlFiles &+ <hr/>;
     	}
     	for(clace <- file.getClasses()){
     		htmlFiles &+ <h3>Class {clace.getName()}</h3>;
@@ -246,9 +246,9 @@ object Proj02 {
     		for(header <- clace.getMHeaders()){
     			htmlFiles &+ <p>{header}</p>;
     		}
-    		htmlFiles &+ <div>.....................................................................................................................</div>
+    		htmlFiles &+ <hr/>;
     	}
-    	htmlFiles &+ <div>---------------------------------------------------------------------------------------</div>;
+    	htmlFiles &+ <hr/>;
     }
 
 
